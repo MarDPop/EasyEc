@@ -11,13 +11,10 @@ import com.meicompany.pi.grid.util.NodeFlat;
 import com.meicompany.pi.grid.util.NodeMap;
 import static com.meicompany.pi.realtime.Helper.*;
 import com.meicompany.pi.realtime.clustering.CentroidPi;
-import java.io.IOException;
 import static java.lang.Math.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -52,7 +49,7 @@ public class PiCalc2 {
     private final double[][] impacts;
     private final double[][] impacts2D;
     private double[][] centroids;
-    private HashMap<Double,CentroidPi[]> runs = new HashMap<Double,CentroidPi[]>();
+    private HashMap<Double,CentroidPi[]> runs = new HashMap<>();
     private double weight;
     private ArrayList<double[][]> testImpacts = new ArrayList<>();
     private ArrayList<double[]> testTraj = new ArrayList<>();
@@ -67,7 +64,7 @@ public class PiCalc2 {
             fragments.add(new FragmentWithOde(atm));
         }
         this.numberTurns = 6;
-        this.impacts = new double[numberFragments*numberTurns][4]; // [x, y , z, time];
+        this.impacts = new double[numberFragments*numberTurns][4]; // x, y , z, time;
         this.impacts2D = new double[numberFragments*numberTurns][2];
     }
     
@@ -138,9 +135,7 @@ public class PiCalc2 {
             double dTemp = sigma_temperature*rand.nextGaussian();
             this.atm.setOffsetTemp(dTemp);
             
-            fragments.parallelStream().forEach((frag) -> {
-                frag.run(x,v,g0,time);
-            });
+            fragments.parallelStream().forEach((frag) -> frag.run(x,v,g0,time));
             
             for(FragmentWithOde frag : fragments) {
                 System.arraycopy(frag.impact(), 0, impacts[count], 0, 3);
@@ -298,7 +293,7 @@ public class PiCalc2 {
         stats[1] /= weight;
         for(CentroidPi[] list : runs.values()){
             for(CentroidPi c : list)  {
-                if (c.x_Center != Double.NaN) {
+                if (!Double.isNaN(c.x_Center)) {
                     double dx = c.x_Center-stats[0];
                     double dy = c.y_Center-stats[1];
                     stats[2] += c.number*dx*dx;
@@ -318,7 +313,7 @@ public class PiCalc2 {
         n.setValue(prob);
         if (prob > tol) {
             n.divide();
-            for(NodeFlat c : n.children) {
+            for(NodeFlat c : n.getChildren()) {
                 testNode(c,tol*5);
             }
         }
@@ -339,7 +334,7 @@ public class PiCalc2 {
         n.setValue(prob);
         if (prob > tol) {
             n.divide();
-            for(NodeFlat c : n.children) {
+            for(NodeFlat c : n.getChildren()) {
                 testNodeMultiple(c,tol*5);
             }
         }

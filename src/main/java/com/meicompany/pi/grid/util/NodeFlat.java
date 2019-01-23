@@ -17,8 +17,8 @@ public class NodeFlat {
     
     private double value;
     
-    public NodeFlat parent = null;
-    public NodeFlat[] children = null;
+    private NodeFlat parent = null;
+    private NodeFlat[] children = null;
     
     public static final double UPPER_LEFT = 1;
     public static final double UPPER_RIGHT = 2;
@@ -50,13 +50,13 @@ public class NodeFlat {
     }
     
     public void divide() {
-        this.children = new NodeFlat[4];
+        this.setChildren(new NodeFlat[4]);
         // 0 = upper right, 1 = upper left, 2 = lower left, 3 = lower right
         // children are in classical quadrant definition
-        this.children[0] = new NodeFlat(this,2);
-        this.children[1] = new NodeFlat(this,1);
-        this.children[2] = new NodeFlat(this,-1);
-        this.children[3] = new NodeFlat(this,-2);
+        this.getChildren()[0] = new NodeFlat(this,2);
+        this.getChildren()[1] = new NodeFlat(this,1);
+        this.getChildren()[2] = new NodeFlat(this,-1);
+        this.getChildren()[3] = new NodeFlat(this,-2);
     }
     
     public double distance(double x, double y) {
@@ -67,8 +67,8 @@ public class NodeFlat {
     
     public void setValue(double value) {
         this.value = value;
-        if (children != null) {
-            for(NodeFlat child : children) {
+        if (getChildren() != null) {
+            for(NodeFlat child : getChildren()) {
                 child.setValue(value);
             }
         }
@@ -80,24 +80,24 @@ public class NodeFlat {
     }
     
     public double getValue(double x, double y){
-        if(children == null){
-            if(parent == null) {
+        if(getChildren() == null){
+            if(getParent() == null) {
                 return value;
             } else {
-                double sumDen = parent.distance(x,y);
+                double sumDen = getParent().distance(x,y);
                 if (sumDen < 1e-20) {
-                    return parent.getValue();
+                    return getParent().getValue();
                 }
                 sumDen = 1/sumDen;
-                double sumNum = sumDen*parent.getValue();
+                double sumNum = sumDen*getParent().getValue();
                 for(int i = 0; i < 4; i++) {
-                    double d = parent.children[i].distance(x,y);
+                    double d = getParent().getChildren()[i].distance(x,y);
                     if(d < 1) {
-                        return parent.children[i].getValue();
+                        return getParent().getChildren()[i].getValue();
                     } else {
                         d = 1/d;
                         sumDen += d;
-                        sumNum += parent.children[i].getValue()*d;
+                        sumNum += getParent().getChildren()[i].getValue()*d;
                     }
                 }
                 return sumNum/sumDen;
@@ -106,18 +106,46 @@ public class NodeFlat {
             // 0 = upper right, 1 = upper left, 2 = lower left, 3 = lower right
             if(x < this.x) {
                 if(y < this.y) {
-                    return children[2].getValue(x, y);
+                    return getChildren()[2].getValue(x, y);
                 } else {
-                    return children[1].getValue(x, y);
+                    return getChildren()[1].getValue(x, y);
                 }
             } else {
                 if(y < this.y) {
-                    return children[3].getValue(x, y);
+                    return getChildren()[3].getValue(x, y);
                 } else {
-                    return children[0].getValue(x, y);
+                    return getChildren()[0].getValue(x, y);
                 }
             }
         }
+    }
+
+    /**
+     * @return the parent
+     */
+    public NodeFlat getParent() {
+        return parent;
+    }
+
+    /**
+     * @param parent the parent to set
+     */
+    public void setParent(NodeFlat parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * @return the children
+     */
+    public NodeFlat[] getChildren() {
+        return children;
+    }
+
+    /**
+     * @param children the children to set
+     */
+    public void setChildren(NodeFlat[] children) {
+        this.children = children;
     }
     
 }

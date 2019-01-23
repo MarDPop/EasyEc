@@ -287,7 +287,7 @@ public class SparseFloat {
             int idx = i.indexOf(itest);
             v.set(idx,vin*v.get(idx));
         } else {
-            if(a != 0.0f) {
+            if(a < 1e-100) {
                 i.add(itest);
                 j.add(jtest);
                 v.add(vin*a);

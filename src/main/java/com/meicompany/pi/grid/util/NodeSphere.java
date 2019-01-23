@@ -19,8 +19,8 @@ public class NodeSphere {
     
     private double value;
     
-    public NodeSphere parent = null;
-    public NodeSphere[] children = null;
+    private NodeSphere parent = null;
+    private NodeSphere[] children = null;
     
     public static final double UPPER_LEFT = 1;
     public static final double UPPER_RIGHT = 2;
@@ -52,13 +52,13 @@ public class NodeSphere {
     }
     
     public void divide() {
-        this.children = new NodeSphere[4];
+        this.setChildren(new NodeSphere[4]);
         // 0 = upper right, 1 = upper left, 2 = lower left, 3 = lower right
         // children are in classical quadrant definition
-        this.children[0] = new NodeSphere(this,2);
-        this.children[1] = new NodeSphere(this,1);
-        this.children[2] = new NodeSphere(this,-1);
-        this.children[3] = new NodeSphere(this,-2);
+        this.getChildren()[0] = new NodeSphere(this,2);
+        this.getChildren()[1] = new NodeSphere(this,1);
+        this.getChildren()[2] = new NodeSphere(this,-1);
+        this.getChildren()[3] = new NodeSphere(this,-2);
     }
     
     public double distance(double longitude, double latitude) {
@@ -67,8 +67,8 @@ public class NodeSphere {
     
     public void setValue(double value) {
         this.value = value;
-        if (children != null) {
-            for(NodeSphere child : children) {
+        if (getChildren() != null) {
+            for(NodeSphere child : getChildren()) {
                 child.setValue(value);
             }
         }
@@ -80,24 +80,24 @@ public class NodeSphere {
     }
     
     public double getValue(double longitude, double latitude){
-        if(children == null){
-            if(parent == null) {
+        if(getChildren() == null){
+            if(getParent() == null) {
                 return value;
             } else {
-                double sumDen = parent.distance(longitude,latitude);
+                double sumDen = getParent().distance(longitude,latitude);
                 if (sumDen < 1e-20) {
-                    return parent.getValue();
+                    return getParent().getValue();
                 }
                 sumDen = 1/sumDen;
-                double sumNum = sumDen*parent.getValue();
+                double sumNum = sumDen*getParent().getValue();
                 for(int i = 0; i < 4; i++) {
-                    double d = parent.children[i].distance(longitude,latitude);
+                    double d = getParent().getChildren()[i].distance(longitude,latitude);
                     if(d < 1) {
-                        return parent.children[i].getValue();
+                        return getParent().getChildren()[i].getValue();
                     } else {
                         d = 1/d;
                         sumDen += d;
-                        sumNum += parent.children[i].getValue()*d;
+                        sumNum += getParent().getChildren()[i].getValue()*d;
                     }
                 }
                 return sumNum/sumDen;
@@ -106,18 +106,46 @@ public class NodeSphere {
             // 0 = upper right, 1 = upper left, 2 = lower left, 3 = lower right
             if(longitude < this.longitude) {
                 if(latitude < this.latitude) {
-                    return children[2].getValue(longitude, latitude);
+                    return getChildren()[2].getValue(longitude, latitude);
                 } else {
-                    return children[1].getValue(longitude, latitude);
+                    return getChildren()[1].getValue(longitude, latitude);
                 }
             } else {
                 if(latitude < this.latitude) {
-                    return children[3].getValue(longitude, latitude);
+                    return getChildren()[3].getValue(longitude, latitude);
                 } else {
-                    return children[0].getValue(longitude, latitude);
+                    return getChildren()[0].getValue(longitude, latitude);
                 }
             }
         }
+    }
+
+    /**
+     * @return the parent
+     */
+    public NodeSphere getParent() {
+        return parent;
+    }
+
+    /**
+     * @param parent the parent to set
+     */
+    public void setParent(NodeSphere parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * @return the children
+     */
+    public NodeSphere[] getChildren() {
+        return children;
+    }
+
+    /**
+     * @param children the children to set
+     */
+    public void setChildren(NodeSphere[] children) {
+        this.children = children;
     }
     
 }

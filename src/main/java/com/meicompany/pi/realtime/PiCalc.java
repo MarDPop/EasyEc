@@ -47,12 +47,6 @@ public class PiCalc {
     
     private double[][] centroidStatXtra;
     
-    /* Not used */
-    //private double sigma_wind;
-    /* moved to fragment */
-    //private double sigma_explosion;
-    //private double[] sigma_l2d = new double[] {0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.8};
-    
     //Impacts
     private final double[][] impacts;
     private final double[][] impacts2D;
@@ -278,7 +272,7 @@ public class PiCalc {
         n.setValue(prob);
         if (prob > tol) {
             n.divide();
-            for(NodeFlat c : n.children) {
+            for(NodeFlat c : n.getChildren()) {
                 testNode(c,tol*5);
             }
         }

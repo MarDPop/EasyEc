@@ -6,6 +6,7 @@
 package com.meicompany.pi.trajectory;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,43 +21,43 @@ public class Trajectory {
     
     public final String name;
     
-    public String DBObjectUsed = null;
+    public final String DBObjectUsed = null;
     
-    public String TRajectoryEditXML = null;
+    public final String TRajectoryEditXML = null;
     
-    public String sourceReference = "";
+    public final String sourceReference = "";
     
-    public String siteReference = "";
+    public final String siteReference = "";
     
-    public double originLatitude = 0;
+    public final double originLatitude = 0;
     
-    public double originLongitude = 0;
+    public final double originLongitude = 0;
     
-    public double originAzimuth = 0;
+    public final double originAzimuth = 0;
     
-    public double originAltitude = 0;
+    public final double originAltitude = 0;
     
-    public String tspi = null;
+    public final String tspi = null;
     
-    public String extraTspi = null;
+    public final String extraTspi = null;
     
-    public String vehicle = null;
+    public final String vehicle = null;
     
-    public String attitude = null;
+    public final String attitude = null;
     
-    public String extrattitude = null;
+    public final String extrattitude = null;
     
-    public String site = null;
+    public final String site = null;
     
-    public String eva = null;
+    public final String eva = null;
     
-    public String trajImportDetail = null;
+    public final String trajImportDetail = null;
     
-    public String trajInputControl = null;
+    public final String trajInputControl = null;
     
-    public String TrajExcerpt = null;
+    public final String TrajExcerpt = null;
     
-    public String trajBulkImport = null;
+    public final String trajBulkImport = null;
     
     private ArrayList<Double[]> position = new ArrayList<>();
     
@@ -64,7 +65,7 @@ public class Trajectory {
         
     private ArrayList<Double> times = new ArrayList<>();
     
-    public int coordinateFrame; // Default ECEF
+    public final int coordinateFrame = 1; // Default ECEF
     
     
     public Trajectory() {
@@ -72,8 +73,8 @@ public class Trajectory {
         name = "";
     }
     
-    public void load(String filename) {
-        String line = "";
+    public void load(String filename) throws FileNotFoundException, IOException {
+        String line;
         String cvsSplitBy = ",";
 
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
@@ -87,7 +88,6 @@ public class Trajectory {
                 velocity.add(new Double[]{numbers[4],numbers[5],numbers[6]});
                 times.add(numbers[0]);
             }
-        } catch (IOException e) {
         }
     }
     

@@ -20,7 +20,7 @@ public final class ECEF extends Coordinates {
     
     
     public ECEF(double[] coordinates) {
-        System.arraycopy(coordinates, 0, this.coordinates, 0, 2);
+        System.arraycopy(coordinates, 0, this.x, 0, 2);
         this.epoch = Epoch.EPOCH_J2000;
     }
     
@@ -42,7 +42,9 @@ public final class ECEF extends Coordinates {
     }
     
     public double[] getSpherical() {
-        return this.spherical = cartesian2spherical(coordinates[0], coordinates[1], coordinates[2]);
+        double[] s = cartesian2spherical(x[0], x[1], x[2]);
+        System.arraycopy(s, 0, this.spherical, 0, 3);
+        return s;
     }
     
     public ECI toECI() {

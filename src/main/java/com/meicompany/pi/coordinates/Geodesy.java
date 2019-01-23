@@ -17,9 +17,9 @@ public final class Geodesy extends Coordinates {
     public static final double ECCENTRICITY_SQ = 6.694379990198e-3;
     
     public Geodesy(double latitude, double longitude, double height) {
-        this.coordinates[0] = latitude;
-        this.coordinates[1] = longitude;
-        this.coordinates[2] = height;
+        this.x[0] = latitude;
+        this.x[1] = longitude;
+        this.x[2] = height;
         this.epoch = Epoch.EPOCH_J2000;
     }
     
@@ -38,7 +38,7 @@ public final class Geodesy extends Coordinates {
     }
     
     public ECEF toEcef() {
-        return geodetic2ecef(coordinates[0],coordinates[1],coordinates[2]);
+        return geodetic2ecef(x[0],x[1],x[2]);
     }
     
     public static double primeVerticalRadiusCurvature(double phi){

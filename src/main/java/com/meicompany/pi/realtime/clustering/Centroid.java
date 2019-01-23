@@ -19,8 +19,6 @@ public class Centroid {
     protected int n;
     protected double[] stats;
     
-    public Centroid(){}
-    
     public void reset(){
         ids.clear();
         this.n = 0;

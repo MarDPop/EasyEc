@@ -22,8 +22,9 @@ public class RunPi {
 
     /**
      * @param args the command line arguments
+     * @throws java.io.IOException
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         Trajectory traj = new Trajectory();
         traj.load("src/main/resources/trajplot_i28_asc_m100_ksc15.csv");
         long start = System.nanoTime();

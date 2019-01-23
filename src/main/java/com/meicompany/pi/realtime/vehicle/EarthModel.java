@@ -11,4 +11,9 @@ package com.meicompany.pi.realtime.vehicle;
  */
 public class EarthModel {
     
+    private double time;
+    
+    public EarthModel(double time) {
+        this.time = time;
+    }
 }

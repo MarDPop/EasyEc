@@ -98,8 +98,8 @@ public class NodeMap {
         }
         for(NodeFlat child : list) {
             points.add(new double[]{child.x,child.y,child.getValue(),child.size});
-            if(child.children != null) {      
-                dive(points,child.children,depth);
+            if(child.getChildren() != null) {      
+                dive(points, child.getChildren(),depth);
             }
         }
     }

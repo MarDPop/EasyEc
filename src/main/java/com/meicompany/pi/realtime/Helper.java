@@ -10,6 +10,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import static java.lang.Math.*;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,6 +39,8 @@ public final class Helper {
     private static final double a4 = 4.5577281365188637e+9;  //a4 = 2.5*a2
     private static final double a5 = 4.2840589930055659e+4;  //a5 = a1+a3
     private static final double a6 = 9.9330562000986220e-1;  //a6 = 1-e2
+    
+    private Helper(){}
     
     public static double norm(double[] v) {
         return Math.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
@@ -120,7 +123,7 @@ public final class Helper {
     public static double[] convert2Rlonglat(double x, double y, double z, double time) {
         double[] out = new double[3];
         out[0] = sqrt(x*x+y*y+z*z);
-        out[1] = atan2(y,x);
+        out[1] = atan2(y,x) + Helper.EARTH_ROT*time;
         out[2] = asin(z/out[0]);
         return out;
     }
@@ -175,8 +178,8 @@ public final class Helper {
     
     public static double[] xy2ll(double[] xy) {
         double[] out = new double[2];
-        out[0] = out[1]/6371000;
-        out[1] = out[0]/(6.383485515566318e+06*cos(out[0]) - 5.357155384473197e+03*cos(3*out[0]) + 6.760901982543714*cos(5*out[0]));
+        out[0] = xy[1]/6371000;
+        out[1] = xy[0]/(6.383485515566318e+06*cos(out[0]) - 5.357155384473197e+03*cos(3*out[0]) + 6.760901982543714*cos(5*out[0]));
         return out;
     }
     
@@ -250,7 +253,7 @@ public final class Helper {
     public static double vincentyFormulae(double long1, double lat1,double long2, double lat2) {
         double U1 = atan((1-EARTH_F)*tan(lat1));
         double U2 = atan((1-EARTH_F)*tan(lat2));
-        double L = lat2-lat1;
+        double L = long2-long1;
         double l = L;
         double calpha,st,ct,d,a,b;
         calpha = st = ct = d = a = b = 0;
@@ -337,6 +340,28 @@ public final class Helper {
             System.arraycopy(arr[i], 0, out[i], 0, arr[i].length);
         }
         return out;
+    }
+    
+    public static int gcd(int a, int b) {
+        BigInteger b1 = BigInteger.valueOf(a);
+        BigInteger b2 = BigInteger.valueOf(b);
+        BigInteger gcd = b1.gcd(b2);
+        return gcd.intValue();
+    }
+    
+    public static ArrayList<Integer> primeFactors(int numbers) {
+        int n = numbers;
+        ArrayList<Integer> factors = new ArrayList<>();
+        for (int i = 2; i <= n / i; i++) {
+            while (n % i == 0) {
+                factors.add(i);
+                n /= i;
+            }
+        }
+        if (n > 1) {
+            factors.add(n);
+        }
+        return factors;
     }
     
 }

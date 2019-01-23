@@ -27,7 +27,7 @@ public final class ECI extends Coordinates {
     }
     
     public double[] toSpherical() {
-        return cartesian2spherical(coordinates[0], coordinates[1], coordinates[2]);
+        return cartesian2spherical(x[0], x[1], x[2]);
     }
      
 }

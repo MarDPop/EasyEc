@@ -5,13 +5,14 @@
  */
 package com.meicompany.pi.realtime;
 
-import com.meicompany.realtime.Helper;
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import java.util.ArrayList;
+import java.util.logging.Level;
 
 /**
  *
@@ -34,11 +35,11 @@ public class OdeAtmosphere {
         speedSound = null;
     }
     
-    public OdeAtmosphere(String filename, double tempOffset, double windStrengthMultiplier) {
+    public OdeAtmosphere(String filename, double tempOffset, double windStrengthMultiplier)  {
         String line = "";
         String cvsSplitBy = ",";
-
-        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+        boolean readfail = false;
+         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
             
             while ((line = br.readLine()) != null) {
                 Double[] numbers = new Double[7];
@@ -48,23 +49,35 @@ public class OdeAtmosphere {
                 }
                 alt.add(numbers);
             }
-        } catch (IOException e) {
+            
+        } catch (IOException ex) {
+            java.util.logging.Logger.getLogger(OdeAtmosphere.class.getName()).log(Level.SEVERE, null, ex);
+            readfail = true;
+        } 
+
+        if (readfail) {
+            densities = null;
+            temperatures = null;
+            winds = null;
+            speedSound = null;
+        } else { 
+            densities = new double[alt.size()];
+            temperatures = new double[alt.size()];
+            winds = new double[alt.size()][2];
+            speedSound = new double[alt.size()];
+            for(int i = 0; i < alt.size(); i++) {
+                Double[] row = alt.get(i);
+                temperatures[i] = row[2] + tempOffset;
+                double delta = row[2]/temperatures[i];
+                densities[i] = row[1]/2000*(delta);
+                speedSound[i] = row[6]/Math.sqrt(delta);
+                delta = row[3]*windStrengthMultiplier;
+                double windDirection = row[4];
+                winds[i][0] = delta*cos(windDirection);
+                winds[i][1] = delta*sin(windDirection);
+            }
         }
-        densities = new double[alt.size()];
-        temperatures = new double[alt.size()];
-        winds = new double[alt.size()][2];
-        speedSound = new double[alt.size()];
-        for(int i = 0; i < alt.size(); i++) {
-            Double[] row = alt.get(i);
-            temperatures[i] = row[2] + tempOffset;
-            double delta = row[2]/temperatures[i];
-            densities[i] = row[1]/2000*(delta);
-            speedSound[i] = row[6]/Math.sqrt(delta);
-            delta = row[3]*windStrengthMultiplier;
-            double windDirection = row[4];
-            winds[i][0] = delta*cos(windDirection);
-            winds[i][1] = delta*sin(windDirection);
-        }
+        
     }
     
     public void setOffsetTemp(double tempOffset){

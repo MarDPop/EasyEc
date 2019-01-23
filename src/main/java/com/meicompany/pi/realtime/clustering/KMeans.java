@@ -5,7 +5,6 @@
  */
 package com.meicompany.pi.realtime.clustering;
 
-import com.meicompany.pi.realtime.Helper;
 import java.util.ArrayList;
 import java.util.Random;
 

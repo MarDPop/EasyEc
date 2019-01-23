@@ -6,6 +6,7 @@
 package com.meicompany.pi.grid;
 
 import com.meicompany.pi.grid.util.SparseFloat;
+import com.meicompany.pi.realtime.Helper;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -28,7 +29,7 @@ public class WorldGrid {
     /**
      * side length of cells in probability grid [arcsec]
      */
-    public int cellSize;
+    private int cellSize;
     
     /**
     * sparse matrix containing world grid (unless a world grid was provided as input, all probabilities are initially zero).  
@@ -59,25 +60,17 @@ public class WorldGrid {
     public WorldGrid(String path, int cellSize) throws FileNotFoundException, IOException {
         setCellSize(cellSize);
         this.grid = new SparseFloat((int)Math.ceil(648000.0/cellSize),(int)Math.ceil(1296000.0/cellSize),0.0f);
-        BufferedReader br = null;
-        String line = "";
+        String line;
         String delimiter = ",";
-        try {
-            br = new BufferedReader(new FileReader(path));
+
+        try (BufferedReader br = new BufferedReader(new FileReader(path))) {
             while ((line = br.readLine()) != null) {
                 // use comma as separator
                 String[] cell = line.split(delimiter);
                 grid.set(Integer.parseInt(cell[0]),Integer.parseInt(cell[1]),Float.parseFloat(cell[2]));
             }
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    System.out.println(e.getMessage());
-                }
-            }
         }
+        
     }
     
     /**
@@ -143,7 +136,7 @@ public class WorldGrid {
         Integer[] rows = grid.getEntryRows();
         Integer[] cols = grid.getEntryColumns();
         double[][] out = new double[grid.getEntrySize()][2];
-        double cellSpacing = cellSize/3600;
+        double cellSpacing = getCellSize()/3600.0;
         for(int i = 0; i < grid.getEntrySize(); i++) {
             out[i][0] = rows[i]*cellSpacing;
             out[i][1] = cols[i]*cellSpacing;
@@ -162,7 +155,7 @@ public class WorldGrid {
         int cols = grid.getColumns();
         out[0] = new double[rows];
         out[1] = new double[cols];
-        double cellSpacing = cellSize/3600;
+        double cellSpacing = getCellSize()/3600.0;
         for(int i = 0; i < rows; i++) {
             out[0][i] = -180 + i*cellSpacing;
         }
@@ -202,8 +195,8 @@ public class WorldGrid {
      * @return 
      */
     public int[] findWorldGridCell(double lat, double lon) {
-        int i = floorWithCheck((lat+90.0)*3600.0/cellSize);
-        int j = floorWithCheck((lon+180.0)*3600.0/cellSize);
+        int i = floorWithCheck((lat+90.0)*3600.0/getCellSize());
+        int j = floorWithCheck((lon+180.0)*3600.0/getCellSize());
         return new int[] {i,j};
     }
     
@@ -228,7 +221,7 @@ public class WorldGrid {
      * @return 
      */
     public double[] latitudeAndLongitudeAtCoordinates(int i, int j) {
-        return new double[]{-90.0+i*cellSize/3600.0, -180.0+j*cellSize/3600.0};
+        return new double[]{-90.0+i*getCellSize()/3600.0, -180.0+j*getCellSize()/3600.0};
     }
     
     /**
@@ -237,7 +230,7 @@ public class WorldGrid {
      */
     public void addWorldGrid(WorldGrid wg) {
         SparseFloat g = wg.getGrid();
-        if(this.cellSize == wg.cellSize) {  
+        if(this.getCellSize() == wg.getCellSize()) {  
             for(int i = 0; i < g.getEntrySize() ;i++)  {
                 float v = g.getValueAtIndex(i);
                 int[] idx = g.coordinatesAtIndex(i);
@@ -245,11 +238,11 @@ public class WorldGrid {
             }
         } else {
             // Could be one method, but must test to make sure mod operator works well 
-            if(wg.cellSize < this.cellSize && this.cellSize % wg.cellSize == 0) {
+            if(wg.getCellSize() < this.getCellSize() && this.getCellSize() % wg.getCellSize() == 0) {
                 for(int i = 0; i < g.getEntrySize() ;i++)  {
                     float v = g.getValueAtIndex(i);
                     int[] idx = g.coordinatesAtIndex(i);
-                    idx = findWorldGridCell(idx[0]*wg.cellSize, idx[1]*wg.cellSize);
+                    idx = findWorldGridCell((double)idx[0]*wg.getCellSize(), (double)idx[1]*wg.getCellSize());
                     this.grid.set(idx[0], idx[1], v);
                 }
             }
@@ -264,22 +257,22 @@ public class WorldGrid {
         if(newCellSize == 0) {
             return;
         }
-        int gcCellSize = WorldGridHelper.gcd(this.cellSize, newCellSize);
-        if (newCellSize > this.cellSize){
+        int gcCellSize = Helper.gcd(this.getCellSize(), newCellSize);
+        if (newCellSize > this.getCellSize()){
             //scaling up
-            if (gcCellSize < this.cellSize) {
-                refineWorldGrid(this.cellSize/gcCellSize );
+            if (gcCellSize < this.getCellSize()) {
+                refineWorldGrid(this.getCellSize()/gcCellSize );
                 coursenWorldGrid(newCellSize/gcCellSize );
             } else {
-                coursenWorldGrid(newCellSize/this.cellSize );
+                coursenWorldGrid(newCellSize/this.getCellSize() );
             }
         } else { 
             //scaling down
             if (gcCellSize < newCellSize) {
-                refineWorldGrid(this.cellSize/gcCellSize );
+                refineWorldGrid(this.getCellSize()/gcCellSize );
                 coursenWorldGrid(newCellSize/gcCellSize );
             } else { 
-                refineWorldGrid(this.cellSize/newCellSize );
+                refineWorldGrid(this.getCellSize()/newCellSize );
             }
         }
     }
@@ -289,7 +282,7 @@ public class WorldGrid {
      * @param scale 
      */
     public void coursenWorldGrid(int scale) {
-        this.cellSize *= scale;
+        this.setCellSize(this.getCellSize() * scale);
         SparseFloat tempGrid = new SparseFloat(this.grid.getRows()/scale,this.grid.getColumns()/scale,this.grid.getDefault());
         for(int i = 0; i < grid.getEntrySize(); i++) {
             int[] idx = grid.coordinatesAtIndex(i);
@@ -309,7 +302,7 @@ public class WorldGrid {
      * @param scale 
      */
     public void refineWorldGrid(int scale) {
-        this.cellSize /= scale;
+        this.setCellSize(this.getCellSize() / scale);
         SparseFloat tempGrid = new SparseFloat(this.grid.getRows()*scale,this.grid.getColumns()*scale,this.grid.getDefault());
         for(int i = 0; i < grid.getEntrySize(); i++) {
             int[] idx = grid.coordinatesAtIndex(i);
@@ -364,14 +357,14 @@ public class WorldGrid {
             return new WorldGrid(wgArray[0]);
         }
         // Options
-        int cs = (int) wgArray[0].cellSize;
-        if(options.list.containsKey("gridCellSize")) {
-            cs = (int)options.list.get("gridCellSize");
+        int cs = (int) wgArray[0].getCellSize();
+        if(options.getList().containsKey("gridCellSize")) {
+            cs = (int)options.getList().get("gridCellSize");
         } 
         WorldGrid out = new WorldGrid(cs);     
         boolean regionalMax = true;
-        if(options.list.containsKey("regionalMax")) {
-            regionalMax = (boolean)options.list.get("regionalMax");
+        if(options.getList().containsKey("regionalMax")) {
+            regionalMax = (boolean)options.getList().get("regionalMax");
         }
         // Go through WorldGrids
         WorldGrid wgTemp = new WorldGrid(cs);
@@ -386,7 +379,7 @@ public class WorldGrid {
                 int[] idx = g.coordinatesAtIndex(i);
                 double[] ll = wg.latitudeAndLongitudeAtCoordinates(idx[0],idx[1]);
                 int[] coordinates = wgTemp.findWorldGridCell(ll[0], ll[1]);
-                if(wg.cellSize < cs){
+                if(wg.getCellSize() < cs){
                     // multiple cells within cell
                     // use regional max if option
                     if(regionalMax) {
@@ -396,7 +389,7 @@ public class WorldGrid {
                     } else {
                         // check if extensive
                         if(!wg.extensive) {
-                            val /= (wg.cellSize/cs)*(wg.cellSize/cs);
+                            val /= (wg.getCellSize()/(float)cs)*(wg.getCellSize()/(float)cs);
                         } 
                         gTemp.add(coordinates[0], coordinates[1], val);
                     }
@@ -413,5 +406,12 @@ public class WorldGrid {
             }
         }
         return out;
+    }
+
+    /**
+     * @return the cellSize
+     */
+    public int getCellSize() {
+        return cellSize;
     }
 }

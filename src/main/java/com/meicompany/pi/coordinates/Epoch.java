@@ -20,6 +20,8 @@ public class Epoch {
     public static final int EPOCH_GCRF = 3;
     public static final int EPOCH_MATLAB = 4;
     
+    private Epoch(){}
+    
     public static double time2Angle(double time) {
         return 2*Math.PI*time/84600.0;
     }

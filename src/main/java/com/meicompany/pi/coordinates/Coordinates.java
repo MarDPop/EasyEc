@@ -13,7 +13,7 @@ public abstract class Coordinates {
     
     protected int epoch;
     protected double time;
-    protected final double[] coordinates = new double[3];
+    protected final double[] x = new double[3];
     
     public void setEpoch(int epoch) {
         this.epoch = epoch;
@@ -35,7 +35,7 @@ public abstract class Coordinates {
         if(coordinates.length != 3) {
             throw new InstantiationError("must provide x y z");
         }
-        System.arraycopy(coordinates, 0, this.coordinates, 0, 3);
+        System.arraycopy(coordinates, 0, this.x, 0, 3);
     }
     
     public static double[] spherical2cartesian(double radius, double polarAngle, double azimuthAngle) {

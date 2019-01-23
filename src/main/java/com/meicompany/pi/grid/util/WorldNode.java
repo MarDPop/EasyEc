@@ -32,7 +32,7 @@ public class WorldNode {
     public WorldNode(int m) {
         this.nodes = new NodeFlat[2*m][m];
         this.angle = Math.PI/m;
-        this.equator = (int)(m/2 + 0.51);
+        this.equator = (int)(m/2.0 + 0.51);
         for(int i = 0; i < nodes.length; i++){
             for(int j = 0; j < nodes[0].length; j++) {
                 nodes[i][j] = new NodeFlat(angle/2+i*angle-Math.PI,angle/2+j*angle-PI2,angle);
@@ -84,10 +84,10 @@ public class WorldNode {
     private void dive(ArrayList<double[]> points, NodeFlat[] list) {
         this.lowestLevel++;
         for(NodeFlat child : list) {
-            if(child.children == null) {
+            if(child.getChildren() == null) {
                 points.add(new double[]{child.x,child.y,child.getValue(),child.size});
             } else {
-                dive(points,child.children);
+                dive(points, child.getChildren());
             }
         }
     }

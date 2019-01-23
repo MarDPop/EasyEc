@@ -8,10 +8,9 @@ package com.meicompany.pi.realtime.ode;
 /**
  *
  * @author mpopescu
+ * @FunctionalInterface
  */
-public abstract class Dynamics {
-    
-    public Dynamics(){}
+public interface Dynamics {
     
     public abstract double[] calc(double[] state, double time);
 }

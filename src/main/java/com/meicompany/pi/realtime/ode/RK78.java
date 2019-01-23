@@ -15,7 +15,7 @@ public class RK78 extends GeneralOde {
     private static final double[] C =  new double[] { 1/18, 1/12, 1/8, 5/16, 3/8, 59/400, 93/200, 0.564865451382260, 13/20, 0.924656277640504, 1, 1};
 
     private static final double[][] A = new double[][] { {1/18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {1/48, 1/16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
+            {1/48, 1/16, 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
             { 1/32, 0, 3/32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} ,
             { 5/16, 0, -75/64, 75/64, 0, 0, 0, 0, 0, 0, 0, 0, 0} ,
             { 3/80, 0, 0, 3/16, 3/20, 0, 0, 0, 0, 0, 0, 0, 0} ,
@@ -57,7 +57,7 @@ public class RK78 extends GeneralOde {
             for(int i = 1; i < 13; i++){
                 double h = dt*C[i];
                 for(int j = 0; j < i; j++) {
-                    if (A[i][j] != 0) {
+                    if (A[i][j] < 1e-16) {
                         double coef = dt*A[i][j];
                         for(int k = 0; k < n; k++) {
                             sol1[k] = x[k] + fevals[j][k]*coef;

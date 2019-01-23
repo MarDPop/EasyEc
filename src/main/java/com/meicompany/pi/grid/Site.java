@@ -21,13 +21,13 @@ public class Site {
     
     public final double azimuth;
     
-    public double meridianDeflection = 0;
+    public final double meridianDeflection = 0;
     
-    public double verticalDeflection = 0;
+    public final double verticalDeflection = 0;
     
-    public double[] efg0;
+    public final double[] efg0 = new double[3];
     
-    public double[][] DC;
+    public final double[][] DC = new double[3][3];
     
     public Site(String name, double latitude, double longitude, double height, double azimuth) {
         this.name = name;
