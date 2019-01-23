@@ -1,8 +1,0 @@
-#surefire
-#Mon Jan 07 15:11:00 EST 2019
-maven.ext.class.path=C\:\\Program Files\\NetBeans 8.2\\java\\maven-nblib\\netbeans-eventspy.jar
-user.dir=C\:\\Users\\mdavid\\Documents\\NetBeansProjects\\Grid
-file.encoding=UTF-8
-localRepository=C\:\\Users\\mdavid\\.m2\\repository
-basedir=C\:\\Users\\mdavid\\Documents\\NetBeansProjects\\Grid
-test=NewEmptyJUnitTest
