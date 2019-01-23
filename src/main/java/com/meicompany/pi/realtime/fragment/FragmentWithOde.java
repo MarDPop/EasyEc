@@ -180,6 +180,7 @@ public final class FragmentWithOde {
                 v[i] += (dt/2)*(3*a[i] - aprev[i]);
             }
             if (h < 0) {
+                groundImpact();
                 break;
             } 
             this.time += dt;
