@@ -5,7 +5,6 @@
  */
 package com.meicompany.pi.realtime;
 
-import com.meicompany.pi.realtime.Helper;
 
 /**
  *

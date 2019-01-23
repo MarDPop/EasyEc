@@ -16,4 +16,17 @@ public class EarthModel {
     public EarthModel(double time) {
         this.time = time;
     }
+    
+    public double changeTime(double dt) {
+        this.time += dt;
+        return time;
+    }
+    
+    public double getTime() {
+        return time;
+    }
+    
+    public void setTime(double time) {
+        this.time = time;
+    }
 }

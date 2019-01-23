@@ -5,20 +5,26 @@
  */
 package com.meicompany.pi.realtime.ode;
 
-import com.meicompany.pi.realtime.Helper;
-
 /**
  *
  * @author mpopescu
  */
 public class BackwardsEuler extends GeneralOde {
+    private double dt_small;
     final int n;
     final double[] x_next;
+    final double[] x_temp;
+    final double[] e;
+    
+    private static int maxInnerLoop = 10;
     
     public BackwardsEuler(Dynamics dynamics, double[] x, double time_start, double time_final) {
         super(dynamics,x,time_start,time_final);
         n = x.length;
         x_next = new double[n];
+        x_temp = new double[n];
+        e = new double[n];
+        dt = 1;
     }
     
     @Override
@@ -30,7 +36,8 @@ public class BackwardsEuler extends GeneralOde {
                 x_next[i] = x[i] + dt*x_dot[i];
             }
             double max_err = 0;
-            for(int iter2 = 0; iter2 < 10; iter2++) {
+            int iter2 = 0;
+            while(iter2 < maxInnerLoop) {
                 System.arraycopy(dynamics.calc(x_next, time), 0, x_dot, 0, n);
                 max_err = 0;
                 for(int i = 0; i < n; i++){
@@ -41,9 +48,63 @@ public class BackwardsEuler extends GeneralOde {
                         max_err = old;
                     }
                 }
-                
+                iter2++;
             }
+            if (iter2 < maxInnerLoop) {
+                dt_small = dt/2;
+                
+                System.arraycopy(dynamics.calc(x, time), 0, x_dot, 0, n);
+                for(int i = 0; i < n; i++){
+                    x_temp[i] = x[i] + dt_small*x_dot[i];
+                }
 
+                iter2 = 0;
+                while(iter2 < maxInnerLoop) {
+                    System.arraycopy(dynamics.calc(x_temp, time), 0, x_dot, 0, n);
+                    max_err = 0;
+                    for(int i = 0; i < n; i++){
+                        double old = x_next[i];
+                        x_temp[i] = x[i] + dt_small*x_dot[i];
+                        old = Math.abs((old-x_temp[i])/x[i]);
+                        if (old > max_err) {
+                            max_err = old;
+                        }
+                    }
+                    iter2++;
+                }
+                
+                System.arraycopy(dynamics.calc(x_temp, time), 0, x_dot, 0, n);
+                for(int i = 0; i < n; i++){
+                    x_temp[i] += dt_small*x_dot[i];
+                }
+
+                iter2 = 0;
+                while(iter2 < maxInnerLoop) {
+                    System.arraycopy(dynamics.calc(x_temp, time), 0, x_dot, 0, n);
+                    max_err = 0;
+                    for(int i = 0; i < n; i++){
+                        double old = x_temp[i];
+                        e[i] = x_temp[i] + dt*x_dot[i];
+                        old = Math.abs((old-e[i])/x_temp[i]);
+                        if (old > max_err) {
+                            max_err = old;
+                        }
+                    }
+                    iter2++;
+                }
+                
+                if (iter2 >= maxInnerLoop) {
+                    dt/=2;
+                }
+            } else {
+                dt /= 2;
+            }
+            
+            max_err = 0;
+            for(int i = 0; i < n; i++) {
+                e[i] -= x_next[i];
+                max_err += Math.abs(e[i]/x[i]);
+            }
             if (max_err < tol) {
                 break;
             }
