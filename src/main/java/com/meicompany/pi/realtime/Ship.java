@@ -77,6 +77,13 @@ public class Ship {
         this.speed = speed;
         this.vector = new double[] {speed*Math.sin(heading),speed*Math.cos(heading)};
     }
+    
+    /**
+     * @return the vector
+     */
+    public double[] getVector() {
+        return vector;
+    }
 
     /**
      * @return the speed

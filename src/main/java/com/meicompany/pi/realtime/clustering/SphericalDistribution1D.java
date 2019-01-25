@@ -13,7 +13,6 @@ import java.util.ArrayList;
  * @author mpopescu
  */
 public class SphericalDistribution1D extends Centroid{
-    private double[] directionVector;
     private double weight;
     
     public SphericalDistribution1D() {
@@ -43,10 +42,6 @@ public class SphericalDistribution1D extends Centroid{
         this.locationTemp[2] += r[2];
         this.stats[0] += d*d;
         this.n++;
-    }
-    
-    public int getNumber() {
-        return n;
     }
     
     public double[] calcStats(ArrayList<double[]> points) {

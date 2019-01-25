@@ -86,17 +86,6 @@ public final class Helper {
         return u[0]*v[0]+u[1]*v[1]+u[2]*v[2];
     }
     
-    /*
-    float InvSqrt(float x){
-        float xhalf = 0.5f * x;
-        int i = *(int*)&x;            // store floating-point bits in integer
-        i = 0x5f3759df - (i >> 1);    // initial guess for Newton's method
-        x = *(float*)&i;              // convert new bits into float
-        x = x*(1.5f - xhalf*x*x);     // One round of Newton's method
-        return x;
-    }
-    */
-    
     public static double[] cross(double[] u, double[] v) {
         double[] out = new double[3];
         out[0] = u[1]*v[2] - u[2]*v[1];

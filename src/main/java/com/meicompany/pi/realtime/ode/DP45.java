@@ -25,7 +25,7 @@ public class DP45 extends GeneralOde {
     final double[] e;
     final int n;
     
-    public DP45(Dynamics dynamics, double[] x, double time_start, double time_final) {
+    public DP45(OdeDynamics dynamics, double[] x, double time_start, double time_final) {
         super(dynamics,x,time_start,time_final);
         n = x.length;
         xa = new double[n];

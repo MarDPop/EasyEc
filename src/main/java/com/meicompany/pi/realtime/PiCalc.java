@@ -36,7 +36,6 @@ public class PiCalc {
     // Initial
     private final double[] x0;
     private final double[] v0;
-    private final double time;
     
     // Variance
     private double sigma_pos;
@@ -52,10 +51,9 @@ public class PiCalc {
     private final double[][] impacts2D;
     private double[][] centroids;
     
-    public PiCalc(double[] x0, double[] v0, double time) {
+    public PiCalc(double[] x0, double[] v0) {
         this.x0 = x0;
         this.v0 = v0;
-        this.time = time;
         this.numberFragments = 120;
         this.fragments = new ArrayList<>(numberFragments);
         for(int i = 0; i < numberFragments; i++) {

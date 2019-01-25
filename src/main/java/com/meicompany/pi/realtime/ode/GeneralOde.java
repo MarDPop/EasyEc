@@ -10,7 +10,7 @@ package com.meicompany.pi.realtime.ode;
  * @author mpopescu
  */
 public abstract class GeneralOde {
-    protected final Dynamics dynamics;
+    protected final OdeDynamics dynamics;
     
     protected final double[] x;
     protected final double[] x_dot;
@@ -21,7 +21,7 @@ public abstract class GeneralOde {
     
     protected double tol;
     
-    public GeneralOde(Dynamics dynamics, double[] x, double time_start, double time_final) {
+    public GeneralOde(OdeDynamics dynamics, double[] x, double time_start, double time_final) {
         this.x = x;
         this.time = time_start;
         this.time_final = time_final;

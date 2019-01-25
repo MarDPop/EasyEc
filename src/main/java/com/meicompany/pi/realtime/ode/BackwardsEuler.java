@@ -18,7 +18,7 @@ public class BackwardsEuler extends GeneralOde {
     
     private static int maxInnerLoop = 10;
     
-    public BackwardsEuler(Dynamics dynamics, double[] x, double time_start, double time_final) {
+    public BackwardsEuler(OdeDynamics dynamics, double[] x, double time_start, double time_final) {
         super(dynamics,x,time_start,time_final);
         n = x.length;
         x_next = new double[n];

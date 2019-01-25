@@ -39,7 +39,7 @@ public class RK78 extends GeneralOde {
     final double[] e_rel;
     final int n;
     
-    public RK78(Dynamics dynamics, double[] x, double time_start, double time_final) {
+    public RK78(OdeDynamics dynamics, double[] x, double time_start, double time_final) {
         super(dynamics,x,time_start,time_final);
         n = x.length;
         sol1 = new double[n];

@@ -22,26 +22,22 @@ public final class FragmentWithOdeDemise {
     private final Random rand = new Random();
     
     
-    private Material material;
+    private final Material material;
     private double tempWall;
     
-    private double pseudoRadius_initial;
+    private final double cD;
+    private final double bc_initial;
     private double pseudoRadius;
     private double pseudoRadius_dot;
-    private double mass;
-    private double cD;
-    private double area;
-    private double bc_initial;
+    private final double density;
     private double bc;
     private double bc_dot;
-    private double explosionVelocity;
-    private double lift2drag;
+    private final double explosionSpeed;
+    private final double lift2drag;
     
     private final double[] machTable = new double[]{0.3, 0.5, 0.8, 0.9, 1, 1.4, 2, 4, 5, 10};
     private final double[] drag2mach = new double[]{1.0000000,0.971428592,0.886956541,0.85955058,0.711627922,0.528497421,0.488038288,0.525773207,0.512562825,0.506622527};
     private final double[] dBdM = new double[] {-0.14285704,-0.281573503,-0.27405961,-1.47922658,-0.457826253,-0.067431888,0.01886746,-0.013210382,-0.00118806};
-
-    private final double[] sigma_l2d = new double[] {0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.8};
     
     // Initial
     private final double[] x = new double[3];
@@ -71,9 +67,9 @@ public final class FragmentWithOdeDemise {
     private double speedSound_high;
     private double speedSound_low;
     
-    private double[] densities;
-    private double[] soundSpeed;
-    private double[][] winds;
+    private final double[] densities;
+    private final double[] soundSpeed;
+    private final double[][] winds;
     
     private final double[] wind = new double[3];
     private double rho = 0;
@@ -82,23 +78,7 @@ public final class FragmentWithOdeDemise {
     final double[] e_ = new double[3];
     final double[] n_ = new double[3];
     
-    public FragmentWithOdeDemise(double mass, double cD, double area, double pseudoRadius, Material material, double explosionVelocity, double lift2drag, OdeAtmosphere atm) {
-        this(atm);
-        this.mass = mass;
-        this.cD = cD;
-        this.area = area;
-        this.pseudoRadius = pseudoRadius;
-        this.pseudoRadius_initial = pseudoRadius;
-        this.bc = mass/(cD*area);
-        this.bc_initial = bc;
-        this.material = material;
-        this.explosionVelocity = explosionVelocity;
-        this.lift2drag = lift2drag;
-    }
-    
-    public FragmentWithOdeDemise(OdeAtmosphere atm) {
-        generatePseudo();
-        // Atm
+    public FragmentWithOdeDemise(FragmentOptions options, OdeAtmosphere atm) {
         this.densities = atm.densities;
         this.soundSpeed = atm.speedSound;
         this.winds = atm.winds;
@@ -112,6 +92,15 @@ public final class FragmentWithOdeDemise {
         this.temp_high = 216.7;
         this.speedSound_high = sqrt(401.37*temp_high);
         this.speedSound_low = sqrt(401.37*temp_low);
+        // Demise Properties
+        this.cD = options.getDragCoefficient();
+        this.pseudoRadius = options.getCharacteristicLength();
+        this.bc_initial = options.getBallisticCoefficient();
+        this.material = options.getMaterial();
+        this.density = material.density*options.getHollownessFactor();
+        //Random 
+        this.explosionSpeed = options.getExplosionSpeed();
+        this.lift2drag = options.getLift2DragRatio();
     }
     
     /**
@@ -167,30 +156,23 @@ public final class FragmentWithOdeDemise {
         // Look for opportunity to precompute
         double qw = Math.sqrt(rho/pseudoRadius)*airspeed*airspeed*airspeed;
         if(qw > 1e8) {
-            qw *= 1.7415e-4; // w / m2  heat to wall Sutton Graves
-            tempWall = Math.sqrt(Math.sqrt(qw/material.emmissivity/5.67e-8));
+            qw *= 1.7415e-4; //  W / m2  heat to wall Sutton Graves
+            tempWall = Math.sqrt(Math.sqrt(qw/material.getEmmissivity()/5.67e-8)); 
             if(tempWall > material.meltingPoint) {
-                bc_dot = qw/(material.density*3*cD);
+                double m_dot = qw/material.density;
+                bc_dot = m_dot/(3*cD);
+                pseudoRadius_dot = m_dot/(12.566370614359172*pseudoRadius*pseudoRadius/density);
             } else {
                 bc_dot = 0;
+                pseudoRadius_dot = 0;
             }
         } else {
             bc_dot = 0;
+            pseudoRadius_dot = 0;
         }
     }
     
-    /**
-     * Generates this as a pseudo fragment, ie not set from a list. 
-     */
-    public void generatePseudo() {
-        this.bc = Math.pow(10,rand.nextFloat()*3)+2;
-        this.bc_initial = bc;
-        this.cD = 0.8;
-        this.pseudoRadius = 1;
-        this.pseudoRadius_initial = 1;
-        this.lift2drag = sigma_l2d[rand.nextInt(6)];
-        this.explosionVelocity = Math.pow(15,rand.nextFloat()*2);
-    }
+    
     
     /**
      * 
@@ -202,16 +184,18 @@ public final class FragmentWithOdeDemise {
      */
     public boolean run(double[] x0, double[] v0, double[] a0, double time) {
         this.time = time;
+        
         System.arraycopy(x0, 0, this.x, 0, 3);
         System.arraycopy(v0, 0, this.v, 0, 3);
         System.arraycopy(a0, 0, this.a, 0, 3);
         
+        this.bc = bc_initial;
         // Explosion
         double angle1 = rand.nextFloat()*TWOPI;
         double angle2 = rand.nextFloat()*TWOPI;
-        //double[] dv = new double[]{frag.explosionVelocity()*cos(angle1)*cos(angle2), frag.explosionVelocity()*cos(angle1)*sin(angle2), frag.explosionVelocity()*sin(angle1)};
+        //double[] dv = new double[]{frag.explosionSpeed()*cos(angle1)*cos(angle2), frag.explosionSpeed()*cos(angle1)*sin(angle2), frag.explosionSpeed()*sin(angle1)};
         // Add explosion to velocity
-        double dv = explosionVelocity*cos(angle1);
+        double dv = explosionSpeed*cos(angle1);
         v[1] += dv*sin(angle2);
         v[2] += dv*tan(angle1);
         v[0] += dv*cos(angle2);
@@ -221,7 +205,8 @@ public final class FragmentWithOdeDemise {
             calcA();
             stepSize();
             bc += bc_dot*dt;
-            if (bc < 0.1) {
+            pseudoRadius += pseudoRadius_dot*dt;
+            if (bc < 0.1 || pseudoRadius < 1e-3) {
                 return false;
             } else {
                 if (h > 0) {

@@ -20,7 +20,7 @@ public class RK12 extends GeneralOde {
     final double[] e;
     final int n;
     
-    public RK12(Dynamics dynamics, double[] x, double time_start, double time_final) {
+    public RK12(OdeDynamics dynamics, double[] x, double time_start, double time_final) {
         super(dynamics,x,time_start,time_final);
         n = x.length;
         xa = new double[n];

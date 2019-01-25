@@ -15,6 +15,8 @@ import java.util.Random;
 public class KMeansSpherical {
     public static final int MAX_ITER = 100;
     
+    private KMeansSpherical(){}
+    
     public static SphericalDistribution1D[] cluster(double[][] data, double[][] initial, int nScatter, double tol) {
         int nPresets = initial.length;
         int nTotal = nPresets+nScatter;

@@ -9,17 +9,15 @@ package com.meicompany.pi.realtime.vehicle;
  *
  * @author mpopescu
  */
-public abstract class Aerodynamics {
+public abstract class VehicleDynamics implements Dynamics6Dof {
     protected final Vehicle vehicle;
     
     protected final EarthModel earth;
     
-    public Aerodynamics(Vehicle vehicle, EarthModel earth) {
+    public VehicleDynamics(Vehicle vehicle, EarthModel earth) {
         this.vehicle = vehicle;
         this.earth = earth;
     }
     
-    public abstract double[] getAxisForces();
     
-    public abstract double[] getAxisTorques();
 }

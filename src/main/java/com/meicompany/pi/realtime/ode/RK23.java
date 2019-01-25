@@ -22,7 +22,7 @@ public class RK23 extends GeneralOde {
     final double[] e;
     final int n;
     
-    public RK23(Dynamics dynamics, double[] x, double time_start, double time_final) {
+    public RK23(OdeDynamics dynamics, double[] x, double time_start, double time_final) {
         super(dynamics,x,time_start,time_final);
         n = x.length;
         xa = new double[n];

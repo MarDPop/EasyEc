@@ -28,10 +28,16 @@ public class Vehicle {
     
     protected double time;
     
-    protected Aerodynamics aero;
+    protected final VehicleDynamics dynamics;
     
     protected double[] controlForces = new double[3]; // currently just simple control vector instead of control surfaces / rcs
     protected double[] controlTorques = new double[3];
+    
+    public Vehicle(double[][] inertia, VehicleDynamics dynamics){
+        this.inertia = inertia;
+        calcInertiaInverse();
+        this.dynamics = dynamics;
+    }
     
     public void setState(double[] state, double time){
         this.position[0] = state[0];
@@ -50,8 +56,8 @@ public class Vehicle {
     }
     
     public double[] getStateRate() {
-        System.arraycopy(aero.getAxisForces(), 0, forces, 0, 3);
-        System.arraycopy(aero.getAxisTorques(), 0, torques, 0, 3);
+        System.arraycopy(dynamics.getAxisForces(), 0, forces, 0, 3);
+        System.arraycopy(dynamics.getAxisTorques(), 0, torques, 0, 3);
         double[] temp = new double[3];
         for(int i = 0; i < 3; i++) {
             forces[i] += controlForces[i];

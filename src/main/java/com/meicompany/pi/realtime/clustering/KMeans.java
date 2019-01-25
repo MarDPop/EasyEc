@@ -14,6 +14,8 @@ import java.util.Random;
  */
 public class KMeans {
     
+    private KMeans(){}
+    
     public static double[][] cluster(double[][] data, double[][] initial, double tol) {
         int nTotal = initial.length;
         //Helper.printCsv(data,"data.csv");

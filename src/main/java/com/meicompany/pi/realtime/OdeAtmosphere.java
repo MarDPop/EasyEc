@@ -6,7 +6,6 @@
 package com.meicompany.pi.realtime;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import static java.lang.Math.cos;
@@ -84,7 +83,7 @@ public class OdeAtmosphere {
         this.tempOffset = tempOffset;
         for(int i = 0; i < alt.size(); i++) {
             Double[] row = alt.get(i);
-            temperatures[i] = row[2] + tempOffset;
+            temperatures[i] = row[2] + this.tempOffset;
             double delta = row[2]/temperatures[i];
             densities[i] = row[1]/2000*(delta);
             speedSound[i] = row[6]/Math.sqrt(delta);

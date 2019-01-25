@@ -275,7 +275,6 @@ public class PiCalc2 {
         BoundingBox box = new BoundingBox(stats);
         Helper.printCsv(box.pointsXY,"initial.csv");
         Helper.printCsv(testImpacts,"data.csv");
-        //Helper.printCsv2(testTraj,"initial.csv");
         return map;
     }
     
