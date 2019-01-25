@@ -12,32 +12,54 @@ import com.meicompany.pi.realtime.Helper;
  * @author mpopescu
  */
 public class Vehicle {
-    
+    // coordinates measured from COG
     
     protected final double[] position = new double[3]; // xyz in ECI frame
     protected final double[] rotation = new double[3]; // pitch, roll, yaw [ie. rotation respect to xyz axis in ECI FRAME]
     protected final double[] velocity = new double[3]; //uvw in ECI frame
-    protected final double[] rotationRate = new double[3]; // pitch, roll, yaw rates
+    protected final double[] rotationRate = new double[3]; // pitch, roll, yaw rates in ECI frame
     
-    protected final double[] forces = new double[3]; // force in xyz axis in ECI frame
-    protected final double[] torques = new double[3]; // moments about xyz axis in ECI frame
+    protected final double[] forces = new double[3]; // force in xyz axis in ECI (inertial) frame
+    protected final double[] moments = new double[3]; // torques about xyz axis in ECI (inertial) frame
+    
+    protected final double[] control_forces = new double[3]; // currently just simple control vector instead of control surfaces / rcs
+    protected final double[] control_forques = new double[3]; // in Body frame
+    
+    protected double[] moments_body_frame; // roll moment, pitch moment, yaw moment
+    protected double[] forces_body_frame; // 
     
     protected double[][] inertia = new double[3][3]; // Ixx, Iyy, Izz, Ixy, Ixz, Iyz from center of mass 3 more memory but faster implementation
     protected double[][] inertiaInv = new double[3][3];
+    
     protected double mass;
     
     protected double time;
     
-    protected final VehicleDynamics dynamics;
+    protected final EarthModel earth;
     
-    protected double[] controlForces = new double[3]; // currently just simple control vector instead of control surfaces / rcs
-    protected double[] controlTorques = new double[3];
+    protected double[] wind;
     
-    public Vehicle(double[][] inertia, VehicleDynamics dynamics){
+    protected double[] velocity_body_frame;
+    protected double[] rpw_body_frame;
+    
+    protected double angle_of_attack;
+    protected double side_slip;
+    
+    protected double lift;
+    protected double drag;
+    protected double grav;
+    protected double thrust;
+    protected double sideForce;
+            
+    
+    
+    
+    public Vehicle(double[][] inertia){
         this.inertia = inertia;
         calcInertiaInverse();
-        this.dynamics = dynamics;
     }
+    
+    protected
     
     public void setState(double[] state, double time){
         this.position[0] = state[0];
@@ -56,20 +78,18 @@ public class Vehicle {
     }
     
     public double[] getStateRate() {
-        System.arraycopy(dynamics.getAxisForces(), 0, forces, 0, 3);
-        System.arraycopy(dynamics.getAxisTorques(), 0, torques, 0, 3);
         double[] temp = new double[3];
         for(int i = 0; i < 3; i++) {
-            forces[i] += controlForces[i];
-            torques[i] += controlTorques[i];
+            forces[i] += control_forces[i];
+            moments[i] += control_forques[i];
             temp[i] = inertia[i][0]*rotationRate[0]+inertia[i][1]*rotationRate[1]+inertia[i][2]*rotationRate[2];
         }
         double[] tumble = Helper.cross(rotationRate, temp);
         for(int i = 0; i < 3; i++) {
-            torques[i] -= tumble[i];
+            moments[i] -= tumble[i];
         }
         for(int i = 0; i < 3; i++) {
-            temp[i] = torques[0]*inertiaInv[i][0]+torques[1]*inertiaInv[i][1]+torques[2]*inertiaInv[i][2];
+            temp[i] = moments[0]*inertiaInv[i][0]+moments[1]*inertiaInv[i][1]+moments[2]*inertiaInv[i][2];
         }
         return new double[] {velocity[0], velocity[1], velocity[2], forces[0]/mass, forces[1]/mass, forces[2]/mass, rotationRate[0], rotationRate[1], rotationRate[2], temp[0], temp[1], temp[2]};
     }
