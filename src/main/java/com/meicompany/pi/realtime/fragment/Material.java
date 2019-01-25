@@ -14,13 +14,15 @@ public class Material {
     public final double meltingPoint;
     public final double specificHeatCapacity;
     public final double heatOfFusion;
+    public final double emmissivity;
     public final String name;
     
-    public Material(double density, double meltingPoint, double specificHeatCapacity, double heatOfFusion, String name){
+    public Material(double density, double meltingPoint, double specificHeatCapacity, double heatOfFusion, double emmissivity, String name){
         this.density = density;
         this.meltingPoint = meltingPoint;
         this.specificHeatCapacity = specificHeatCapacity;
         this.heatOfFusion = heatOfFusion;
+        this.emmissivity = emmissivity;
         this.name = name;
     }
 }

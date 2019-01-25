@@ -21,18 +21,21 @@ import java.util.Random;
 public final class FragmentWithOdeDemise {
     private final Random rand = new Random();
     
+    
+    private Material material;
+    private double tempWall;
+    
+    private double pseudoRadius_initial;
+    private double pseudoRadius;
+    private double pseudoRadius_dot;
     private double mass;
     private double cD;
     private double area;
-    
+    private double bc_initial;
     private double bc;
+    private double bc_dot;
     private double explosionVelocity;
     private double lift2drag;
-    
-    private Material material;
-    private double skinTemp;
-    private double innerTemp;
-    private double pseudoRadius;
     
     private final double[] machTable = new double[]{0.3, 0.5, 0.8, 0.9, 1, 1.4, 2, 4, 5, 10};
     private final double[] drag2mach = new double[]{1.0000000,0.971428592,0.886956541,0.85955058,0.711627922,0.528497421,0.488038288,0.525773207,0.512562825,0.506622527};
@@ -42,7 +45,6 @@ public final class FragmentWithOdeDemise {
     
     // Initial
     private final double[] x = new double[3];
-    private final double[] xold = new double[3];
     private final double[] v = new double[3]; 
     private final double[] a = new double[3];
     private final double[] aprev = new double[3];
@@ -80,17 +82,20 @@ public final class FragmentWithOdeDemise {
     final double[] e_ = new double[3];
     final double[] n_ = new double[3];
     
-    public FragmentWithOdeDemise(double mass, double cD, double area, Material material, double explosionVelocity, double lift2drag, OdeAtmosphere atm) {
+    public FragmentWithOdeDemise(double mass, double cD, double area, double pseudoRadius, Material material, double explosionVelocity, double lift2drag, OdeAtmosphere atm) {
         this(atm);
         this.mass = mass;
         this.cD = cD;
         this.area = area;
+        this.pseudoRadius = pseudoRadius;
+        this.pseudoRadius_initial = pseudoRadius;
         this.bc = mass/(cD*area);
+        this.bc_initial = bc;
         this.material = material;
         this.explosionVelocity = explosionVelocity;
         this.lift2drag = lift2drag;
     }
- 
+    
     public FragmentWithOdeDemise(OdeAtmosphere atm) {
         generatePseudo();
         // Atm
@@ -109,6 +114,10 @@ public final class FragmentWithOdeDemise {
         this.speedSound_low = sqrt(401.37*temp_low);
     }
     
+    /**
+     * 
+     * @param offsetTemp 
+     */
     public void setOffsetTemp(double offsetTemp) {
         this.temp_low = 287+offsetTemp;
         this.temp_high = 216.7+offsetTemp;
@@ -116,6 +125,11 @@ public final class FragmentWithOdeDemise {
         this.speedSound_low = sqrt(401.37*temp_low);
     }
     
+    /**
+     * quicker implementation of getting ballistic coefficient
+     * @param speed airspeed of fragment
+     * @return 
+     */
     public double bcFast(double speed) {
         if (speed > 500) {
             return 0.5*bc;
@@ -124,6 +138,11 @@ public final class FragmentWithOdeDemise {
         }
     }
     
+    /**
+     * 
+     * @param mach mach number 
+     * @return the ballistic coefficient for given mach number from table values
+     */
     @SuppressWarnings("empty-statement")
     public double bc(double mach) {
         if (mach > 10) {
@@ -139,19 +158,49 @@ public final class FragmentWithOdeDemise {
         }
     }
     
-    private void demise(double rho, double airspeed ) {
+    /**
+     * Gets demise of the fragment. Calculates mass lass and approximate cross area reduction
+     * @param rho
+     * @param airspeed 
+     */
+    private void demise() {
         // Look for opportunity to precompute
-        double q = 1.7415e-4*Math.sqrt(rho/pseudoRadius)*airspeed*airspeed*airspeed; // w / m2   
-        this.bc = mass/(cD*area);
+        double qw = Math.sqrt(rho/pseudoRadius)*airspeed*airspeed*airspeed;
+        if(qw > 1e8) {
+            qw *= 1.7415e-4; // w / m2  heat to wall Sutton Graves
+            tempWall = Math.sqrt(Math.sqrt(qw/material.emmissivity/5.67e-8));
+            if(tempWall > material.meltingPoint) {
+                bc_dot = qw/(material.density*3*cD);
+            } else {
+                bc_dot = 0;
+            }
+        } else {
+            bc_dot = 0;
+        }
     }
     
+    /**
+     * Generates this as a pseudo fragment, ie not set from a list. 
+     */
     public void generatePseudo() {
         this.bc = Math.pow(10,rand.nextFloat()*3)+2;
+        this.bc_initial = bc;
+        this.cD = 0.8;
+        this.pseudoRadius = 1;
+        this.pseudoRadius_initial = 1;
         this.lift2drag = sigma_l2d[rand.nextInt(6)];
         this.explosionVelocity = Math.pow(15,rand.nextFloat()*2);
     }
     
-    public void run(double[] x0, double[] v0, double[] a0, double time) {
+    /**
+     * 
+     * @param x0
+     * @param v0
+     * @param a0
+     * @param time 
+     * @return  if the impact hit ground
+     */
+    public boolean run(double[] x0, double[] v0, double[] a0, double time) {
         this.time = time;
         System.arraycopy(x0, 0, this.x, 0, 3);
         System.arraycopy(v0, 0, this.v, 0, 3);
@@ -169,19 +218,25 @@ public final class FragmentWithOdeDemise {
         
         for(int iter = 0; iter < 100000; iter++) {
             System.arraycopy(a, 0, aprev, 0, 3);
-            System.arraycopy(x, 0, xold, 0, 3);
             calcA();
             stepSize();
-            for (int i = 0; i < 3; i++) {
-                x[i] += dt*(v[i]+ (dt/6)*(4*a[i]-aprev[i]));
-                v[i] += (dt/2)*(3*a[i] - aprev[i]);
+            bc += bc_dot*dt;
+            if (bc < 0.1) {
+                return false;
+            } else {
+                if (h > 0) {
+                    for (int i = 0; i < 3; i++) {
+                        x[i] += dt*(v[i]+ (dt/6)*(4*a[i]-aprev[i]));
+                        v[i] += (dt/2)*(3*a[i] - aprev[i]);
+                    }
+                } else {
+                    groundImpact();
+                    return true;
+                }
             }
-            if (h < 0) {
-                groundImpact();
-                break;
-            } 
             this.time += dt;
         }
+        return false;
     }
     
     
@@ -256,7 +311,7 @@ public final class FragmentWithOdeDemise {
         airspeed = norm(v_free);
         double mach = airspeed/b;
         
-        demise(rho,airspeed);
+        demise();
         double drag = rho*airspeed/bc(mach);
         double lift = drag*lift2drag*airspeed;
         lift -= EARTH_MU/R2;
@@ -276,17 +331,10 @@ public final class FragmentWithOdeDemise {
     }
     
     private void groundImpact() {
-        x[0] -= xold[0];
-        x[1] -= xold[1];
-        x[2] -= xold[2];
-        double delta = h/norm(x); // fair approx
-        x[0] = xold[0] + delta*x[0];
-        x[1] = xold[1] + delta*x[1];
-        x[2] = xold[2] + delta*x[2];
-    }
-    
-    public double[] getX() {
-        return x;
+        double time_past_impact = h/airspeed; // speed is approximately vertical
+        x[0] -= v[0]*time_past_impact;
+        x[1] -= v[1]*time_past_impact;
+        x[2] -= v[2]*time_past_impact;
     }
     
     public double[] impact() {
