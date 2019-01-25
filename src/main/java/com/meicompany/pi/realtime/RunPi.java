@@ -22,11 +22,14 @@ public class RunPi {
 
     /**
      * @param args the command line arguments
-     * @throws java.io.IOException
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         Trajectory traj = new Trajectory();
-        traj.load("src/main/resources/trajplot_i28_asc_m100_ksc15.csv");
+        try {
+            traj.load("src/main/resources/trajplot_i28_asc_m100_ksc15.csv");
+        } catch (IOException e) {
+            
+        }
         long start = System.nanoTime();
         //NodeMap map = testSingle(traj);
         NodeMap map = testMultiple(traj);
