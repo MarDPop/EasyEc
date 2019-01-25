@@ -9,6 +9,17 @@ package com.meicompany.pi.realtime.vehicle;
  *
  * @author mpopescu
  */
-public class Aerodynamics {
+public abstract class Aerodynamics {
+    protected final Vehicle vehicle;
     
+    protected final EarthModel earth;
+    
+    public Aerodynamics(Vehicle vehicle, EarthModel earth) {
+        this.vehicle = vehicle;
+        this.earth = earth;
+    }
+    
+    public abstract double[] getAxisForces();
+    
+    public abstract double[] getAxisTorques();
 }
