@@ -10,10 +10,10 @@ package com.meicompany.pi.realtime.fragment;
  * @author mpopescu
  */
 public class Material {
-    public final double density;
-    public final double meltingPoint;
-    public final double specificHeatCapacity;
-    public final double heatOfFusion;
+    private double density;
+    private double meltingPoint;
+    private double specificHeatCapacity;
+    private double heatOfFusion;
     private double emmissivity;
     public final String name;
     
@@ -48,5 +48,61 @@ public class Material {
      */
     public void setEmmissivity(double emmissivity) {
         this.emmissivity = emmissivity;
+    }
+
+    /**
+     * @return the density
+     */
+    public double getDensity() {
+        return density;
+    }
+
+    /**
+     * @param density the density to set
+     */
+    public void setDensity(double density) {
+        this.density = density;
+    }
+
+    /**
+     * @return the meltingPoint
+     */
+    public double getMeltingPoint() {
+        return meltingPoint;
+    }
+
+    /**
+     * @param meltingPoint the meltingPoint to set
+     */
+    public void setMeltingPoint(double meltingPoint) {
+        this.meltingPoint = meltingPoint;
+    }
+
+    /**
+     * @return the specificHeatCapacity
+     */
+    public double getSpecificHeatCapacity() {
+        return specificHeatCapacity;
+    }
+
+    /**
+     * @param specificHeatCapacity the specificHeatCapacity to set
+     */
+    public void setSpecificHeatCapacity(double specificHeatCapacity) {
+        this.specificHeatCapacity = specificHeatCapacity;
+    }
+
+    /**
+     * @return the heatOfFusion
+     */
+    public double getHeatOfFusion() {
+        return heatOfFusion;
+    }
+
+    /**
+     * @param heatOfFusion the heatOfFusion to set
+     */
+    public void setHeatOfFusion(double heatOfFusion) {
+        this.heatOfFusion = heatOfFusion;
     }
 }

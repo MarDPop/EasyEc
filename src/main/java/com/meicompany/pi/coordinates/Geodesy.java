@@ -28,17 +28,8 @@ public final class Geodesy extends Coordinates {
         this.time = time;
     }
     
-    public static ECEF geodetic2ecef(double latitude, double longitude, double height) {
-        double N = primeVerticalRadiusCurvature(latitude);
-        double[] x = new double[3];
-        x[0] = (N+height)*Math.cos(latitude)*Math.cos(longitude);
-        x[1] = (N+height)*Math.cos(latitude)*Math.sin(longitude);
-        x[2] = ((1-ECCENTRICITY_SQ)*N+height)*Math.sin(latitude);
-        return new ECEF(x);
-    }
-    
     public ECEF toEcef() {
-        return geodetic2ecef(x[0],x[1],x[2]);
+        return new ECEF(geodetic2ecef(x[0],x[1],x[2]));
     }
     
     public static double primeVerticalRadiusCurvature(double phi){

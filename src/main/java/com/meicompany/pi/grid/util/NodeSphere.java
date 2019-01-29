@@ -5,6 +5,8 @@
  */
 package com.meicompany.pi.grid.util;
 
+import com.meicompany.pi.coordinates.CoordinateException;
+import com.meicompany.pi.coordinates.Coordinates;
 import com.meicompany.pi.realtime.Helper;
 
 /**
@@ -62,7 +64,7 @@ public class NodeSphere {
     }
     
     public double distance(double longitude, double latitude) {
-        return Helper.flatEarthDistance(longitude, latitude, this.longitude, this.latitude);
+        return Coordinates.flatEarthDistance(longitude, latitude, this.longitude, this.latitude);
     }
     
     public void setValue(double value) {

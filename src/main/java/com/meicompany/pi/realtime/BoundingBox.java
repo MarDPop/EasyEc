@@ -5,6 +5,8 @@
  */
 package com.meicompany.pi.realtime;
 
+import com.meicompany.pi.coordinates.CoordinateException;
+
 
 /**
  *
@@ -42,7 +44,7 @@ public class BoundingBox {
         pointsXY[3][0] = p2x+dx;
         pointsXY[3][1] = p2y-dy;
         for(int i = 0; i < 4; i++){
-            double[] ll = Helper.xy2ll(pointsXY[i]);
+            double[] ll = CoordinateException.xy2ll(pointsXY[i]);
             latitudes[i] = ll[0];
             longitudes[i] = ll[1];
             pointsLL[i][0] = ll[0];

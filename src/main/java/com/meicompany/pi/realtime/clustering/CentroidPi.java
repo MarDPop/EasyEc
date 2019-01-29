@@ -5,6 +5,7 @@
  */
 package com.meicompany.pi.realtime.clustering;
 
+import com.meicompany.pi.coordinates.CoordinateException;
 import static com.meicompany.pi.realtime.Helper.TWOPI;
 import static com.meicompany.pi.realtime.Helper.flatEarthXY;
 
@@ -43,7 +44,7 @@ public class CentroidPi {
     }
     
     public double calcAtLatLong(double latitude, double longitude) {
-        double[] xy = flatEarthXY(latitude,longitude);
+        double[] xy = CoordinateException.flatEarthXY(latitude,longitude);
         return calcAt(xy[0],xy[1]);
     }
 }

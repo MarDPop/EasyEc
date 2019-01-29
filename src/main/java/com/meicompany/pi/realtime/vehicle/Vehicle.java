@@ -31,6 +31,9 @@ public class Vehicle {
     protected double[][] inertia = new double[3][3]; // Ixx, Iyy, Izz, Ixy, Ixz, Iyz from center of mass 3 more memory but faster implementation
     protected double[][] inertiaInv = new double[3][3];
     
+    protected double[][] rotationMatrixBody2ECI = new double[3][3]; 
+    protected double[][] rotationMatrixECI2Body = new double[3][3];
+    
     protected double mass;
     
     protected double time;
@@ -50,16 +53,11 @@ public class Vehicle {
     protected double grav;
     protected double thrust;
     protected double sideForce;
-            
-    
-    
     
     public Vehicle(double[][] inertia){
         this.inertia = inertia;
         calcInertiaInverse();
     }
-    
-    protected
     
     public void setState(double[] state, double time){
         this.position[0] = state[0];
@@ -114,4 +112,55 @@ public class Vehicle {
     public double[] getState(){
         return new double[] {position[0], position[1], position[2], velocity[0], velocity[1], velocity[2], rotation[0], rotation[1], rotation[2], rotationRate[0], rotationRate[1], rotationRate[2]};
     }
+    
+    private double[][] calcRotationMatrixes(double roll, double pitch, double yaw) {
+        double c1 = Math.cos(roll);
+        double c2 = Math.cos(pitch);
+        double c3 = Math.cos(yaw);
+        double s1 = Math.sin(roll);
+        double s2 = Math.sin(pitch);
+        double s3 = Math.sin(yaw);
+        double a,b;
+        this.rotationMatrixECI2Body[0][0] = c2*c3;
+        this.rotationMatrixBody2ECI[0][0] = this.rotationMatrixECI2Body[2][2];
+        
+        this.rotationMatrixECI2Body[0][1] = -c2*s3;
+        this.rotationMatrixBody2ECI[2][1] = -this.rotationMatrixECI2Body[0][1];
+        
+        this.rotationMatrixECI2Body[0][2] = s2;
+        this.rotationMatrixBody2ECI[2][0] = -this.rotationMatrixECI2Body[0][2];
+        
+        b = c3*s1*s2;
+        a = c1*s3;
+        this.rotationMatrixECI2Body[1][0] = a+b;
+        this.rotationMatrixBody2ECI[1][2] = b-a;
+        
+        a = s1*s2*s3;
+        b = c1*c3;
+        this.rotationMatrixECI2Body[1][1] = b-a;
+        this.rotationMatrixBody2ECI[1][1] = a+b;
+        
+        this.rotationMatrixECI2Body[1][2] = -c2*s1;
+        this.rotationMatrixBody2ECI[1][0] = -this.rotationMatrixECI2Body[1][2];
+        
+        a = c1*c3*s2;
+        b = s1*s3;
+        this.rotationMatrixECI2Body[2][0] = b-a;
+        this.rotationMatrixBody2ECI[0][2] = a+b;
+        
+        a = c1*s2*s3;
+        b = c3*s1;
+        this.rotationMatrixECI2Body[2][1] = a+b;
+        this.rotationMatrixBody2ECI[1][2] = b-a;
+        
+        this.rotationMatrixECI2Body[2][2] = c1*c2;
+        this.rotationMatrixBody2ECI[2][2] = this.rotationMatrixECI2Body[0][0];
+        
+        
+        
+        
+        
+        
+    }
+
 }

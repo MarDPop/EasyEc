@@ -5,6 +5,8 @@
  */
 package com.meicompany.pi.realtime;
 
+import com.meicompany.pi.coordinates.CoordinateException;
+
 /**
  *
  * @author mpopescu
@@ -97,7 +99,7 @@ public class Ship {
      */
     public void move(double dt) {
         double distance = speed*dt;
-        double r = Helper.seaLevel(latitude);
+        double r = CoordinateException.seaLevel(latitude);
         double maxDistance = 20000;
         int multiple = 1;
         while(distance > maxDistance) {
@@ -105,8 +107,8 @@ public class Ship {
             multiple *=2;
         }
         for(int i = 0; i < multiple; i++){
-            double dlat = distance*Math.sin(latitude)*Helper.lengthDegreeLat(latitude);
-            double dlong = distance*Math.cos(latitude)*Helper.lengthDegreeLong(latitude);
+            double dlat = distance*Math.sin(latitude)*CoordinateException.lengthDegreeLat(latitude);
+            double dlong = distance*Math.cos(latitude)*CoordinateException.lengthDegreeLong(latitude);
             this.latitude += dlat/r;
             this.longitude += dlong/r;
         }

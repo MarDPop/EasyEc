@@ -1,81 +1,30 @@
-
 package com.meicompany.pi.coordinates;
 
 import com.meicompany.pi.realtime.Helper;
-import static java.lang.Math.asin;
-import static java.lang.Math.atan;
-import static java.lang.Math.atan2;
-import static java.lang.Math.cos;
-import static java.lang.Math.sin;
-import static java.lang.Math.sqrt;
-import static java.lang.Math.tan;
+import static java.lang.Math.*;
 
 /**
  *
  * @author mpopescu
  */
-public abstract class Coordinates {
-    
+
+public class CoordinateException extends Exception{
+
+    private static final double a5 = 42840.589930055656; //a5 = a1+a3
     public static final double EARTH_SIDEREAL = 86164.1;
     public static final double EARTH_ROT = 7.29211505392569E-5;
-    public static final double EARTH_AVG_R = 6371000;
-    public static final double EARTH_AVG_D = 12742000;
-    public static final double EARTH_POLAR_R = 6356752.314;
-    public static final double EARTH_EQUATOR_R = 6378137;
-    public static final double EARTH_F = 0.003352810664747;
-    
-    
-    private static final double a1 = 42697.67270715754; //a1 = a*e2
-    private static final double a2 = 1.8230912546075456E9; //a2 = a1*a1
-    private static final double a3 = 142.91722289812412; //a3 = a1*e2/2
-    private static final double a4 = 4.557728136518864E9; //a4 = 2.5*a2
-    private static final double a5 = 42840.589930055656; //a5 = a1+a3
     private static final double a6 = 0.9933056200098622; //a6 = 1-e2
+    private static final double a1 = 42697.67270715754; //a1 = a*e2
+    public static final double EARTH_AVG_R = 6371000;
+    public static final double EARTH_POLAR_R = 6356752.314;
+    public static final double e2prime = 0.006739496819936;
+    private static final double a2 = 1.8230912546075456E9; //a2 = a1*a1
+    public static final double EARTH_F = 0.003352810664747;
     public static final double e2 = 0.006694380066765; //WGS-84 first eccentricity squared
-    public static final double e2prime = 0.006739496819936; // second eccentricity
-    
-    protected int epoch;
-    protected double time;
-    protected final double[] x = new double[3];
-    
-    public void setEpoch(int epoch) {
-        this.epoch = epoch;
-    }
-    
-    public int getEpoch() {
-        return epoch;
-    }
-    
-    public void setTime(double time) {
-        this.time = time;
-    }
-    
-    public double getTime() {
-        return time;
-    }
-    
-    public void set(double[] coordinates){
-        if(coordinates.length != 3) {
-            throw new InstantiationError("must provide x y z");
-        }
-        System.arraycopy(coordinates, 0, this.x, 0, 3);
-    }
-    
-    public static double[] spherical2cartesian(double radius, double polarAngle, double azimuthAngle) {
-        double[] out = new double[3];
-        out[0] = radius*Math.cos(azimuthAngle)*Math.sin(polarAngle);
-        out[1] = radius*Math.sin(azimuthAngle)*Math.sin(polarAngle);
-        out[2] = radius*Math.cos(polarAngle);
-        return out;
-    }
-    
-    public static double[] cartesian2spherical(double x, double y, double z) {
-        double[] out = new double[3];
-        out[0] = Math.sqrt(x*x+y*y+z*z);
-        out[1] = Math.acos(z/out[0]);
-        out[2] = Math.atan2(y,x);
-        return out;
-    }
+    public static final double EARTH_EQUATOR_R = 6378137;
+    private static final double a4 = 4.557728136518864E9; //a4 = 2.5*a2
+    private static final double a3 = 142.91722289812412; //a3 = a1*e2/2
+    public static final double EARTH_AVG_D = 12742000;
 
     public static double[][] convert2Rlonglat(double[] x, double[] y, double[] z, double[] time) {
         int n = x.length;
@@ -110,7 +59,7 @@ public abstract class Coordinates {
     }
 
     public static double flatEarthDistance(double[] xyz1, double[] xyz2) {
-        return EARTH_AVG_D * asin(sqrt(1 - Helper.dot(xyz1, xyz2)) / EARTH_AVG_D * EARTH_AVG_R);
+        return EARTH_AVG_D * asin(sqrt(1 - Helper.dot(xyz1, xyz2)) / Helper.EARTH_AVG_D * Helper.EARTH_AVG_R);
     }
 
     public static double[] flatEarthXY(double longitude, double latitude) {
@@ -136,17 +85,17 @@ public abstract class Coordinates {
 
     public static double[] geodetic2ecef(double longitude, double latitude, double h) {
         double s = sin(latitude);
-        double n = EARTH_EQUATOR_R / sqrt(1 - e2 * s * s);
+        double n = Helper.EARTH_EQUATOR_R / sqrt(1 - Helper.e2 * s * s);
         double[] ecef = new double[3];
         ecef[0] = (n + h) * cos(latitude) * cos(longitude);
         ecef[1] = ecef[0] * tan(longitude);
-        ecef[2] = s * (n * (1 - e2) + h);
+        ecef[2] = s * (n * (1 - Helper.e2) + h);
         return ecef;
     }
 
     public static double vincentyFormulae(double long1, double lat1, double long2, double lat2) {
-        double U1 = atan((1 - EARTH_F) * tan(lat1));
-        double U2 = atan((1 - EARTH_F) * tan(lat2));
+        double U1 = atan((1 - Helper.EARTH_F) * tan(lat1));
+        double U2 = atan((1 - Helper.EARTH_F) * tan(lat2));
         double L = long2 - long1;
         double l = L;
         double calpha;
@@ -169,14 +118,14 @@ public abstract class Coordinates {
             b = cu2 * cu1 * sin(l) / st;
             calpha = 1 - b * b;
             d = ct - 2 * su1 * su2 / calpha;
-            double C = EARTH_F / 16 * calpha * (4 + EARTH_F * (4 - 3 * calpha));
-            l = L + (1 - C) * EARTH_F * b * (a + C * st * (d + C * ct * (2 * d - 1)));
+            double C = Helper.EARTH_F / 16 * calpha * (4 + Helper.EARTH_F * (4 - 3 * calpha));
+            l = L + (1 - C) * Helper.EARTH_F * b * (a + C * st * (d + C * ct * (2 * d - 1)));
         }
-        double u2 = calpha * (EARTH_EQUATOR_R * EARTH_EQUATOR_R / (EARTH_POLAR_R * EARTH_POLAR_R) - 1);
+        double u2 = calpha * (Helper.EARTH_EQUATOR_R * Helper.EARTH_EQUATOR_R / (Helper.EARTH_POLAR_R * Helper.EARTH_POLAR_R) - 1);
         double A = 1 - u2 / 16384 * (4096 + u2 * (-768 + u2 * (320 - 175 * u2)));
         double B = u2 / 1024 * (256 + u2 * (-128 + u2 * (74 - 47 * u2)));
         L = B * st * (d + 0.25 * B * (ct * (2 * d - 1)) - 0.1666 * B * d * (-3 + 4 * b * b) * (-3 + 4 * d));
-        return EARTH_POLAR_R * A * (a - L);
+        return Helper.EARTH_POLAR_R * A * (a - L);
     }
 
     public static double[] ecef2geo(double[] ecef) {
@@ -213,28 +162,28 @@ public abstract class Coordinates {
         geo[1] = Math.atan2(y, x); //Lon (final)
         s2 = z * z / r2;
         c2 = w2 / r2;
-        u = a2 / r;
-        v = a3 - a4 / r;
+        u = Helper.a2 / r;
+        v = Helper.a3 - Helper.a4 / r;
         if (c2 > 0.3) {
-            s = (zp / r) * (1.0 + c2 * (a1 + u + s2 * v) / r);
+            s = (zp / r) * (1.0 + c2 * (Helper.a1 + u + s2 * v) / r);
             geo[0] = Math.asin(s); //Lat
             ss = s * s;
             c = Math.sqrt(1.0 - ss);
         } else {
-            c = (w / r) * (1.0 - s2 * (a5 - u - c2 * v) / r);
+            c = (w / r) * (1.0 - s2 * (Helper.a5 - u - c2 * v) / r);
             geo[0] = Math.acos(c); //Lat
             ss = 1.0 - c * c;
             s = Math.sqrt(ss);
         }
-        g = 1.0 - e2 * ss;
-        rg = EARTH_EQUATOR_R / Math.sqrt(g);
-        rf = a6 * rg;
+        g = 1.0 - Helper.e2 * ss;
+        rg = Helper.EARTH_EQUATOR_R / Math.sqrt(g);
+        rf = Helper.a6 * rg;
         u = w - rg * c;
         v = zp - rf * s;
         f = c * u + s * v;
         m = c * v - s * u;
         p = m / (rf / g + f);
-        geo[0] += p; //Lat
+        geo[0] = geo[0] + p; //Lat
         geo[2] = f + m * p / 2.0; //Altitude
         if (z < 0.0) {
             geo[0] *= -1.0; //Lat
@@ -249,5 +198,6 @@ public abstract class Coordinates {
     public static double lengthDegreeLong(double latitude) {
         return 111412.84 * cos(latitude) - 93.5 * cos(3 * latitude) + 0.118 * cos(5 * latitude);
     }
+
     
 }

@@ -5,6 +5,7 @@
  */
 package com.meicompany.pi.realtime;
 
+import com.meicompany.pi.coordinates.CoordinateException;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -100,7 +101,7 @@ public class OdeAtmosphere {
     public static double geometricAlt(double[] r) {
         double R = Helper.norm(r);
         double lat = Math.asin(r[2]/R);
-        double seaLevel = Helper.seaLevel(lat);
+        double seaLevel = CoordinateException.seaLevel(lat);
         return (R-seaLevel)*seaLevel/R;
     }
     

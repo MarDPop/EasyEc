@@ -5,6 +5,7 @@
  */
 package com.meicompany.pi.realtime.clustering;
 
+import com.meicompany.pi.coordinates.CoordinateException;
 import com.meicompany.pi.realtime.Helper;
 import java.util.ArrayList;
 
@@ -34,7 +35,7 @@ public class SphericalDistribution extends Centroid{
     }
     
     public double distance(double[] r) {
-        return Helper.flatEarthDistance(location, r);
+        return CoordinateException.flatEarthDistance(location, r);
     }
     
     public void addPoint(double[] r, double d, int i) {

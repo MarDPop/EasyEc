@@ -46,7 +46,7 @@ public class RunPi {
     
     private static NodeMap testSingle(Trajectory traj) {
         double[][] state = traj.getState(1);
-        PiCalc2 pi = new PiCalc2(state[0],state[1],1);
+        PiCalc pi = new PiCalc(state[0],state[1],1);
         pi.run(12);
         return pi.mapQuick();
     }
@@ -54,8 +54,8 @@ public class RunPi {
     private static NodeMap testMultiple(Trajectory traj) {
         double time = 0;
         double[][] state = traj.getState(0);
-        PiCalc2 pi = new PiCalc2(state[0],state[1],1);
-        while(time < 100){
+        PiCalc pi = new PiCalc(state[0],state[1],1);
+        while(time < 5){
             state = traj.getState(time);
             pi.setState(state[0],state[1], time);
             pi.run(12);

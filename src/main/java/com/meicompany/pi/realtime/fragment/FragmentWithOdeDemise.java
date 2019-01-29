@@ -97,7 +97,7 @@ public final class FragmentWithOdeDemise {
         this.pseudoRadius = options.getCharacteristicLength();
         this.bc_initial = options.getBallisticCoefficient();
         this.material = options.getMaterial();
-        this.density = material.density*options.getHollownessFactor();
+        this.density = material.getDensity()*options.getHollownessFactor();
         //Random 
         this.explosionSpeed = options.getExplosionSpeed();
         this.lift2drag = options.getLift2DragRatio();
@@ -158,8 +158,8 @@ public final class FragmentWithOdeDemise {
         if(qw > 1e8) {
             qw *= 1.7415e-4; //  W / m2  heat to wall Sutton Graves
             tempWall = Math.sqrt(Math.sqrt(qw/material.getEmmissivity()/5.67e-8)); 
-            if(tempWall > material.meltingPoint) {
-                double m_dot = qw/material.density;
+            if(tempWall > material.getMeltingPoint()) {
+                double m_dot = qw/material.getDensity();
                 bc_dot = m_dot/(3*cD);
                 pseudoRadius_dot = m_dot/(12.566370614359172*pseudoRadius*pseudoRadius/density);
             } else {

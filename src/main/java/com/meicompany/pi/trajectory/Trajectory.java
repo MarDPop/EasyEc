@@ -17,59 +17,18 @@ import java.util.ArrayList;
  */
 public class Trajectory {
     
-    public final String version;
+    public final String name;    
     
-    public final String name;
+    private final ArrayList<Double[]> position = new ArrayList<>();
     
-    public final String DBObjectUsed = null;
-    
-    public final String TRajectoryEditXML = null;
-    
-    public final String sourceReference = "";
-    
-    public final String siteReference = "";
-    
-    public final double originLatitude = 0;
-    
-    public final double originLongitude = 0;
-    
-    public final double originAzimuth = 0;
-    
-    public final double originAltitude = 0;
-    
-    public final String tspi = null;
-    
-    public final String extraTspi = null;
-    
-    public final String vehicle = null;
-    
-    public final String attitude = null;
-    
-    public final String extrattitude = null;
-    
-    public final String site = null;
-    
-    public final String eva = null;
-    
-    public final String trajImportDetail = null;
-    
-    public final String trajInputControl = null;
-    
-    public final String TrajExcerpt = null;
-    
-    public final String trajBulkImport = null;
-    
-    private ArrayList<Double[]> position = new ArrayList<>();
-    
-    private ArrayList<Double[]> velocity = new ArrayList<>(); 
+    private final ArrayList<Double[]> velocity = new ArrayList<>(); 
         
-    private ArrayList<Double> times = new ArrayList<>();
+    private final ArrayList<Double> times = new ArrayList<>();
     
     public final int coordinateFrame = 1; // Default ECEF
     
     
     public Trajectory() {
-        version = "";
         name = "";
     }
     
