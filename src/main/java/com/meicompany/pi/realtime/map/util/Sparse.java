@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.meicompany.pi.grid.util;
+package com.meicompany.pi.realtime.map.util;
 
 import java.util.ArrayList;
 
@@ -200,7 +200,7 @@ public class Sparse {
     /**
      * Copy of this matrix
      * @return 
-     * @throws com.meicompany.pi.grid.util.MatrixError 
+     * @throws com.meicompany.pi.realtime.map.util.MatrixError 
      */
     public Sparse copy() {
         ArrayList<Integer> i_temp = new ArrayList<>(i);

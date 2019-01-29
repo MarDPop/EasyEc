@@ -5,7 +5,7 @@
  */
 package com.meicompany.pi.realtime;
 
-import com.meicompany.pi.grid.util.NodeMap;
+import com.meicompany.pi.realtime.map.util.NodeMap;
 import com.meicompany.pi.trajectory.Trajectory;
 import java.io.FileWriter;
 import java.io.IOException;

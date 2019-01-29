@@ -7,6 +7,7 @@ package com.meicompany.pi.realtime.vehicle;
 
 import com.meicompany.pi.coordinates.Earth;
 import com.meicompany.pi.realtime.Helper;
+import java.util.ArrayList;
 
 /**
  *
@@ -55,6 +56,8 @@ public class Vehicle {
     protected double thrust;
     protected double sideForce;
     
+    protected ArrayList<Structure> components = new ArrayList<>();
+    
     public Vehicle(double[][] inertia){
         this.inertia = inertia;
         calcInertiaInverse();
@@ -74,6 +77,7 @@ public class Vehicle {
         this.rotationRate[1] = state[10];
         this.rotationRate[2] = state[11];
         this.time = time;
+        calcRotationMatrixes();
     }
     
     public double[] getStateRate() {
@@ -114,13 +118,13 @@ public class Vehicle {
         return new double[] {position[0], position[1], position[2], velocity[0], velocity[1], velocity[2], rotation[0], rotation[1], rotation[2], rotationRate[0], rotationRate[1], rotationRate[2]};
     }
     
-    private void calcRotationMatrixes(double roll, double pitch, double yaw) {
-        double c1 = Math.cos(roll);
-        double c2 = Math.cos(pitch);
-        double c3 = Math.cos(yaw);
-        double s1 = Math.sin(roll);
-        double s2 = Math.sin(pitch);
-        double s3 = Math.sin(yaw);
+    private void calcRotationMatrixes() {
+        double c1 = Math.cos(rotation[0]);
+        double c2 = Math.cos(rotation[1]);
+        double c3 = Math.cos(rotation[2]);
+        double s1 = Math.sin(rotation[0]);
+        double s2 = Math.sin(rotation[1]);
+        double s3 = Math.sin(rotation[2]);
         double a,b;
         this.rotationMatrixECI2Body[0][0] = c2*c3;
         this.rotationMatrixBody2ECI[0][0] = this.rotationMatrixECI2Body[2][2];

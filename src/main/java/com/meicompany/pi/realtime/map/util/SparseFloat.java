@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.meicompany.pi.grid.util;
+package com.meicompany.pi.realtime.map.util;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -298,7 +298,7 @@ public class SparseFloat {
     /**
      * Copy of this matrix
      * @return 
-     * @throws com.meicompany.pi.grid.util.MatrixError 
+     * @throws com.meicompany.pi.realtime.map.util.MatrixError 
      */
     public SparseFloat copy() {
         ArrayList<Integer> i_temp = new ArrayList<>(i);

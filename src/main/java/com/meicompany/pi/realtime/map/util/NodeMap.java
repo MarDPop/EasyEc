@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.meicompany.pi.grid.util;
+package com.meicompany.pi.realtime.map.util;
 
+import com.meicompany.pi.coordinates.Coordinates;
 import com.meicompany.pi.realtime.Helper;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -20,41 +21,51 @@ import org.json.JSONObject;
  *
  * @author mpopescu
  */
-public class WorldNode {
+public class NodeMap {
     
+    final double xCenter;
+    final double yCenter;
+    final int m;
+    final int n;
     final public NodeFlat[][] nodes;
-    final double angle;
-    final int equator;
+    final double delta;
     
     private short lowestLevel;
-    private final double PI2 = Math.PI/2;
     
-    public WorldNode(int m) {
-        this.nodes = new NodeFlat[2*m][m];
-        this.angle = Math.PI/m;
-        this.equator = (int)(m/2.0 + 0.51);
-        for(int i = 0; i < nodes.length; i++){
-            for(int j = 0; j < nodes[0].length; j++) {
-                nodes[i][j] = new NodeFlat(angle/2+i*angle-Math.PI,angle/2+j*angle-PI2,angle);
+    public NodeMap(double xCenter, double yCenter, int m, int n, double delta) {
+        this.xCenter = xCenter;
+        this.yCenter = yCenter;
+        this.m = m;
+        this.n = n;
+        this.nodes = new NodeFlat[2*m+1][2*n+1];
+        this.delta = delta;
+        for(int i = 0; i < (m+1); i++){
+            for(int j = 0; j < (n+1); j++) {
+                nodes[m+i][n+j] = new NodeFlat(xCenter+i*delta,yCenter+j*delta,delta);
+                nodes[m+i][n-j] = new NodeFlat(xCenter+i*delta,yCenter-j*delta,delta);
+            }
+            for(int j = 0; j < (n+1); j++) {
+                nodes[m-i][n+j] = new NodeFlat(xCenter-i*delta,yCenter+j*delta,delta);
+                nodes[m-i][n-j] = new NodeFlat(xCenter-i*delta,yCenter-j*delta,delta);
             }
         }
     }
     
-    public NodeFlat getNodeAt(double longitude, double latitude) {
-        int i = (int) ((longitude+Math.PI)/angle);
-        int j = (int) ((latitude+PI2)/angle);
+    public NodeFlat getNodeAt(double x, double y) {
+        int i = (int) ((x-xCenter)/delta)+m;
+        int j = (int) ((y-yCenter)/delta)+n;
         return nodes[i][j];
     }
     
-    public double getValue(double longitude, double latitude) {
-        return getNodeAt(longitude,latitude).getValue(longitude,latitude);
+    public double getValue(double x, double y) {
+        return getNodeAt(x,y).getValue(x,y);
     }
     
     public ArrayList<double[]> nodeGrid() {
-        this.lowestLevel = 0;
+        short depth = 0;
         ArrayList<double[]> points = new ArrayList<>();
         for(NodeFlat[] row : nodes) {
-            dive(points,row);
+            dive(points,row,depth);
         }
         return points;
     }
@@ -78,16 +89,18 @@ public class WorldNode {
     
     public double smallestAngle() {
         // returns NaN if points hasn't run
-        return this.angle/(Math.pow(2, lowestLevel));
+        return this.delta/(Math.pow(2, lowestLevel));
     }
     
-    private void dive(ArrayList<double[]> points, NodeFlat[] list) {
-        this.lowestLevel++;
+    private void dive(ArrayList<double[]> points, NodeFlat[] list, short depth) {
+        depth++;
+        if (depth > lowestLevel) {
+            lowestLevel = depth;
+        }
         for(NodeFlat child : list) {
-            if(child.getChildren() == null) {
-                points.add(new double[]{child.x,child.y,child.getValue(),child.size});
-            } else {
-                dive(points, child.getChildren());
+            points.add(new double[]{child.x,child.y,child.getValue(),child.size});
+            if(child.getChildren() != null) {      
+                dive(points, child.getChildren(),depth);
             }
         }
     }
@@ -96,8 +109,7 @@ public class WorldNode {
         ArrayList<double[]> points = nodeGrid();
         double a = smallestAngle();
         double a2 = a/2; //bias
-        int m = (int)(180/a);
-        SparseFloat out = new SparseFloat(2*m,m,baseValue);
+        SparseFloat out = new SparseFloat(2*m+1,2*n+1,baseValue);
         points.forEach((point) -> {
             int i = (int)((point[0]+a2)/a);
             int j = (int)((point[0]+a2)/a);
@@ -106,18 +118,25 @@ public class WorldNode {
         return out;
     }
     
-    public JSONObject toJson() {
+    public JSONObject toJson(boolean convert) {
         JSONObject jo = new JSONObject();
         Collection<JSONObject> arr = new ArrayList<>();
         ArrayList<double[]> points = nodeGrid();
         points.forEach((point) -> {
             JSONObject p = new JSONObject();
-            p.put("latitude",point[0]);
-            p.put("longitude",point[1]);
+            if(convert){
+                double[] c = Coordinates.xy2ll(point);
+                p.put("latitude",c[0]);
+                p.put("longitude",c[1]);
+            } else {
+                p.put("x",point[0]);
+                p.put("y",point[1]);
+            }
             p.put("value",point[2]);
             arr.add(p);
         });
         jo.put("Points", new JSONArray(arr));
         return jo;
     }
+    
 }
