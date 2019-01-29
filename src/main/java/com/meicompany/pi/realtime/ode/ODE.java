@@ -9,24 +9,22 @@ package com.meicompany.pi.realtime.ode;
  *
  * @author mpopescu
  */
-public abstract class GeneralOde {
-    protected final OdeDynamics dynamics;
+public abstract class ODE {
+    protected final Dynamics dynamics;
     
     protected final double[] x;
-    protected final double[] x_dot;
     
     protected double time;
     protected double dt;    
     protected final double time_final;
+   
+    protected ODEOptions options;
     
-    protected double tol;
-    
-    public GeneralOde(OdeDynamics dynamics, double[] x, double time_start, double time_final) {
-        this.x = x;
-        this.time = time_start;
-        this.time_final = time_final;
-        this.x_dot = new double[x.length];
+    public ODE(Dynamics dynamics, double[] x, ODEOptions options) {
         this.dynamics = dynamics;
+        this.x = x;
+        this.time = options.startTime;
+        this.time_final = options.endTime;
     }
     
     public void run() {

@@ -9,7 +9,7 @@ package com.meicompany.pi.realtime.ode;
  *
  * @author mpopescu
  */
-public class RK78 extends GeneralOde {
+public class RK78 extends ODE {
         //https://en.wikipedia.org/wiki/Bogacki–Shampine_method
     
     private static final double[] C =  new double[] { 1/18, 1/12, 1/8, 5/16, 3/8, 59/400, 93/200, 0.564865451382260, 13/20, 0.924656277640504, 1, 1};
@@ -39,8 +39,8 @@ public class RK78 extends GeneralOde {
     final double[] e_rel;
     final int n;
     
-    public RK78(OdeDynamics dynamics, double[] x, double time_start, double time_final) {
-        super(dynamics,x,time_start,time_final);
+    public RK78(Dynamics dynamics, double[] x, ODEOptions options) {
+        super(dynamics,x,options);
         n = x.length;
         sol1 = new double[n];
         sol2 = new double[n];
@@ -84,8 +84,8 @@ public class RK78 extends GeneralOde {
                     max_err = e_rel[i];
                 }
             }
-            if (max_err > tol) {
-                dt *= 0.91*Math.pow(tol*dt/max_err,0.125);
+            if (max_err > options.getRelativeTolerance()) {
+                dt *= 0.91*Math.pow(options.getRelativeTolerance()*dt/max_err,0.125);
             } else {
                 System.arraycopy(sol1, 0, x, 0, n);
                 time +=dt;

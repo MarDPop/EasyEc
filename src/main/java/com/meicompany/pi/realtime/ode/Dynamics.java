@@ -10,7 +10,7 @@ package com.meicompany.pi.realtime.ode;
  * @author mpopescu
  */
 @FunctionalInterface
-public interface OdeDynamics {
+public interface Dynamics {
     
     public abstract double[] calc(double[] state, double time);
     

@@ -9,18 +9,20 @@ package com.meicompany.pi.realtime.ode;
  *
  * @author mpopescu
  */
-public class BackwardsEuler extends GeneralOde {
+public class BackwardsEuler extends ODE {
     private double dt_small;
     final int n;
+    final double[] x_dot;
     final double[] x_next;
     final double[] x_temp;
     final double[] e;
     
-    private static int maxInnerLoop = 10;
+    private static final int MAXINNERLOOP = 10;
     
-    public BackwardsEuler(OdeDynamics dynamics, double[] x, double time_start, double time_final) {
-        super(dynamics,x,time_start,time_final);
+    public BackwardsEuler(Dynamics dynamics, double[] x, ODEOptions options) {
+        super(dynamics,x,options);
         n = x.length;
+        x_dot = new double[n];
         x_next = new double[n];
         x_temp = new double[n];
         e = new double[n];
@@ -37,7 +39,7 @@ public class BackwardsEuler extends GeneralOde {
             }
             double max_err = 0;
             int iter2 = 0;
-            while(iter2 < maxInnerLoop) {
+            while(iter2 < MAXINNERLOOP) {
                 System.arraycopy(dynamics.calc(x_next, time), 0, x_dot, 0, n);
                 max_err = 0;
                 for(int i = 0; i < n; i++){
@@ -50,7 +52,7 @@ public class BackwardsEuler extends GeneralOde {
                 }
                 iter2++;
             }
-            if (iter2 < maxInnerLoop) {
+            if (iter2 < MAXINNERLOOP) {
                 dt_small = dt/2;
                 
                 System.arraycopy(dynamics.calc(x, time), 0, x_dot, 0, n);
@@ -59,7 +61,7 @@ public class BackwardsEuler extends GeneralOde {
                 }
 
                 iter2 = 0;
-                while(iter2 < maxInnerLoop) {
+                while(iter2 < MAXINNERLOOP) {
                     System.arraycopy(dynamics.calc(x_temp, time), 0, x_dot, 0, n);
                     max_err = 0;
                     for(int i = 0; i < n; i++){
@@ -79,7 +81,7 @@ public class BackwardsEuler extends GeneralOde {
                 }
 
                 iter2 = 0;
-                while(iter2 < maxInnerLoop) {
+                while(iter2 < MAXINNERLOOP) {
                     System.arraycopy(dynamics.calc(x_temp, time), 0, x_dot, 0, n);
                     max_err = 0;
                     for(int i = 0; i < n; i++){
@@ -93,7 +95,7 @@ public class BackwardsEuler extends GeneralOde {
                     iter2++;
                 }
                 
-                if (iter2 >= maxInnerLoop) {
+                if (iter2 >= MAXINNERLOOP) {
                     dt/=2;
                 }
             } else {
@@ -105,7 +107,7 @@ public class BackwardsEuler extends GeneralOde {
                 e[i] -= x_next[i];
                 max_err += Math.abs(e[i]/x[i]);
             }
-            if (max_err < tol) {
+            if (max_err < options.getRelativeTolerance()) {
                 break;
             }
         }

@@ -11,7 +11,7 @@ import com.meicompany.pi.realtime.Helper;
  *
  * @author mpopescu
  */
-public class RK12 extends GeneralOde {
+public class RK12 extends ODE {
     final double[] xa;
     final double[] xb;
     final double[] k1;
@@ -20,8 +20,8 @@ public class RK12 extends GeneralOde {
     final double[] e;
     final int n;
     
-    public RK12(OdeDynamics dynamics, double[] x, double time_start, double time_final) {
-        super(dynamics,x,time_start,time_final);
+    public RK12(Dynamics dynamics, double[] x, ODEOptions options) {
+        super(dynamics,x,options);
         n = x.length;
         xa = new double[n];
         xb = new double[n];
@@ -52,8 +52,8 @@ public class RK12 extends GeneralOde {
                 xb[i] = x[i] + xb[i]+e[i];
             }
             double err = Helper.norm(e);
-            if (err > tol*dt) {
-                dt *= 0.7071*Math.sqrt(tol*dt/err);
+            if (err > options.getTolerance()*dt) {
+                dt *= 0.7071*Math.sqrt(options.getTolerance()*dt/err);
             } else {
                 System.arraycopy(xa, 0, x, 0, n);
                 System.arraycopy(k3, 0, k1, 0, n);

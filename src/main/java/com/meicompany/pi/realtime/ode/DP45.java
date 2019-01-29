@@ -11,7 +11,7 @@ import com.meicompany.pi.realtime.Helper;
  *
  * @author mpopescu
  */
-public class DP45 extends GeneralOde {
+public class DP45 extends ODE {
     //https://en.wikipedia.org/wiki/Bogacki–Shampine_method
     final double[] xa;
     final double[] xb;
@@ -25,8 +25,8 @@ public class DP45 extends GeneralOde {
     final double[] e;
     final int n;
     
-    public DP45(OdeDynamics dynamics, double[] x, double time_start, double time_final) {
-        super(dynamics,x,time_start,time_final);
+    public DP45(Dynamics dynamics, double[] x, ODEOptions options) {
+        super(dynamics,x,options);
         n = x.length;
         xa = new double[n];
         xb = new double[n];
@@ -79,8 +79,8 @@ public class DP45 extends GeneralOde {
                 e[i] = xb[i] - xa[i];
             }
             double err = Helper.norm(e);
-            if (err > tol) {
-                dt *= 0.84*Math.sqrt(Math.sqrt(tol*dt/err));
+            if (err > options.getTolerance()) {
+                dt *= 0.84*Math.sqrt(Math.sqrt(options.getTolerance()*dt/err));
             } else {
                 System.arraycopy(xa, 0, x, 0, n);
                 System.arraycopy(k7, 0, k1, 0, n);

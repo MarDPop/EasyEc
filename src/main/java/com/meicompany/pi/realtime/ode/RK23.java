@@ -11,7 +11,7 @@ import com.meicompany.pi.realtime.Helper;
  *
  * @author mpopescu
  */
-public class RK23 extends GeneralOde {
+public class RK23 extends ODE {
     //https://en.wikipedia.org/wiki/Bogacki–Shampine_method
     final double[] xa;
     final double[] xb;
@@ -22,8 +22,8 @@ public class RK23 extends GeneralOde {
     final double[] e;
     final int n;
     
-    public RK23(OdeDynamics dynamics, double[] x, double time_start, double time_final) {
-        super(dynamics,x,time_start,time_final);
+    public RK23(Dynamics dynamics, double[] x, ODEOptions options) {
+        super(dynamics,x,options);
         n = x.length;
         xa = new double[n];
         xb = new double[n];
@@ -60,8 +60,8 @@ public class RK23 extends GeneralOde {
                 e[i] = xb[i] - xa[i];
             }
             double err = Helper.norm(e);
-            if (err > tol) {
-                dt *= 0.7071*Math.sqrt(tol*dt/err);
+            if (err > options.getTolerance()) {
+                dt *= 0.7071*Math.sqrt(options.getTolerance()*dt/err);
             } else {
                 System.arraycopy(xa, 0, x, 0, n);
                 System.arraycopy(k4, 0, k1, 0, n);
