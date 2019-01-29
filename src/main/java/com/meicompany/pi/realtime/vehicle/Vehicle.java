@@ -5,6 +5,7 @@
  */
 package com.meicompany.pi.realtime.vehicle;
 
+import com.meicompany.pi.coordinates.Earth;
 import com.meicompany.pi.realtime.Helper;
 
 /**
@@ -38,7 +39,7 @@ public class Vehicle {
     
     protected double time;
     
-    protected final EarthModel earth;
+    protected Earth earth;
     
     protected double[] wind;
     
@@ -113,7 +114,7 @@ public class Vehicle {
         return new double[] {position[0], position[1], position[2], velocity[0], velocity[1], velocity[2], rotation[0], rotation[1], rotation[2], rotationRate[0], rotationRate[1], rotationRate[2]};
     }
     
-    private double[][] calcRotationMatrixes(double roll, double pitch, double yaw) {
+    private void calcRotationMatrixes(double roll, double pitch, double yaw) {
         double c1 = Math.cos(roll);
         double c2 = Math.cos(pitch);
         double c3 = Math.cos(yaw);
@@ -155,11 +156,6 @@ public class Vehicle {
         
         this.rotationMatrixECI2Body[2][2] = c1*c2;
         this.rotationMatrixBody2ECI[2][2] = this.rotationMatrixECI2Body[0][0];
-        
-        
-        
-        
-        
         
     }
 

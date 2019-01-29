@@ -5,7 +5,9 @@
  */
 package com.meicompany.pi.realtime;
 
+import com.meicompany.pi.realtime.artifacts.BoundingBox;
 import com.meicompany.pi.coordinates.CoordinateException;
+import com.meicompany.pi.coordinates.Coordinates;
 import com.meicompany.pi.realtime.clustering.KMeans;
 import com.meicompany.pi.realtime.fragment.FragmentWithOde;
 import com.meicompany.pi.grid.util.NodeFlat;
@@ -172,7 +174,7 @@ public class PiCalc {
     
     public double calcAtLatLong2d(double latitude, double longitude) {
         double sum = 0;
-        double[] xy = CoordinateException.flatEarthXY(latitude,longitude);
+        double[] xy = Coordinates.flatEarthXY(latitude,longitude);
         for(int i = 0; i < numberCentroids; i++) {
             double dx = xy[0] - centroids[i][0];
             double dy = xy[1] - centroids[i][1];

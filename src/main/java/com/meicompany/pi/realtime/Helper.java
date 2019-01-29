@@ -5,8 +5,8 @@
  */
 package com.meicompany.pi.realtime;
 
-import com.meicompany.pi.coordinates.CoordinateException;
-import com.meicompany.pi.grid.util.SparseFloat;
+import com.meicompany.pi.coordinates.Coordinates;
+import com.meicompany.pi.coordinates.Earth;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -85,25 +85,25 @@ public final class Helper {
         //http://www.oc.nps.edu/oc2902w/coord/coordcvt.pdf
         double[] out = new double[2];
         double p = sqrt(impact[0]*impact[0]+impact[1]*impact[1]);
-        double lambda = atan(impact[2]*CoordinateException.EARTH_EQUATOR_R/(p*CoordinateException.EARTH_POLAR_R));
+        double lambda = atan(impact[2]*Earth.EARTH_EQUATOR_R/(p*Earth.EARTH_POLAR_R));
         lambda *= 3;
-        out[0] = atan((impact[2]+CoordinateException.e2prime*CoordinateException.EARTH_POLAR_R*sin(lambda))/(p*CoordinateException.e2*CoordinateException.EARTH_EQUATOR_R*cos(lambda)));
-        out[1] = atan2(impact[1],impact[0])-impact[3]*CoordinateException.EARTH_ROT;
+        out[0] = atan((impact[2]+Earth.e2prime*Earth.EARTH_POLAR_R*sin(lambda))/(p*Earth.e2*Earth.EARTH_EQUATOR_R*cos(lambda)));
+        out[1] = atan2(impact[1],impact[0])-impact[3]*Earth.EARTH_ROT;
         return out;
     }
     
     
     public static double[] impact2xy(double[] impact) {
-        double[] ll = CoordinateException.ecef2geo(impact);
-        ll[1] -= impact[3]*CoordinateException.EARTH_ROT;
-        return CoordinateException.ll2xy(ll);
+        double[] ll = Coordinates.ecef2geo(impact);
+        ll[1] -= impact[3]*Earth.EARTH_ROT;
+        return Coordinates.ll2xy(ll);
     }
     
     public static double[] impactECEF2XY(double[] ecef) {
-        double[] geo = CoordinateException.ecef2geo(ecef);
+        double[] geo = Coordinates.ecef2geo(ecef);
         double[] out = new double[2];
-        out[0] = geo[1]*CoordinateException.lengthDegreeLong(geo[0])*DEG2RAD;
-        out[1] = geo[0]*CoordinateException.lengthDegreeLat(geo[0])*DEG2RAD;
+        out[0] = geo[1]*Coordinates.lengthDegreeLong(geo[0])*DEG2RAD;
+        out[1] = geo[0]*Coordinates.lengthDegreeLat(geo[0])*DEG2RAD;
         return out;
     }
     

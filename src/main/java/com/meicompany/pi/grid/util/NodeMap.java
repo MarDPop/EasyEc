@@ -6,6 +6,7 @@
 package com.meicompany.pi.grid.util;
 
 import com.meicompany.pi.coordinates.CoordinateException;
+import com.meicompany.pi.coordinates.Coordinates;
 import com.meicompany.pi.realtime.Helper;
 import java.io.FileWriter;
 import java.io.IOException;

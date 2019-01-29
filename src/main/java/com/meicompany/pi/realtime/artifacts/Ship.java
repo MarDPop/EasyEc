@@ -3,9 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.meicompany.pi.realtime;
+package com.meicompany.pi.realtime.artifacts;
 
 import com.meicompany.pi.coordinates.CoordinateException;
+import com.meicompany.pi.coordinates.Coordinates;
 
 /**
  *
@@ -99,7 +100,7 @@ public class Ship {
      */
     public void move(double dt) {
         double distance = speed*dt;
-        double r = CoordinateException.seaLevel(latitude);
+        double r = Coordinates.seaLevel(latitude);
         double maxDistance = 20000;
         int multiple = 1;
         while(distance > maxDistance) {
@@ -107,8 +108,8 @@ public class Ship {
             multiple *=2;
         }
         for(int i = 0; i < multiple; i++){
-            double dlat = distance*Math.sin(latitude)*CoordinateException.lengthDegreeLat(latitude);
-            double dlong = distance*Math.cos(latitude)*CoordinateException.lengthDegreeLong(latitude);
+            double dlat = distance*Math.sin(latitude)*Coordinates.lengthDegreeLat(latitude);
+            double dlong = distance*Math.cos(latitude)*Coordinates.lengthDegreeLong(latitude);
             this.latitude += dlat/r;
             this.longitude += dlong/r;
         }

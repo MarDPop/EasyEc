@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.meicompany.pi.realtime;
+package com.meicompany.pi.realtime.artifacts;
 
-import com.meicompany.pi.coordinates.CoordinateException;
+import com.meicompany.pi.coordinates.Coordinates;
 
 
 /**
@@ -44,7 +44,7 @@ public class BoundingBox {
         pointsXY[3][0] = p2x+dx;
         pointsXY[3][1] = p2y-dy;
         for(int i = 0; i < 4; i++){
-            double[] ll = CoordinateException.xy2ll(pointsXY[i]);
+            double[] ll = Coordinates.xy2ll(pointsXY[i]);
             latitudes[i] = ll[0];
             longitudes[i] = ll[1];
             pointsLL[i][0] = ll[0];

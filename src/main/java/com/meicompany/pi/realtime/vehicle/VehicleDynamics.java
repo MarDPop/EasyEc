@@ -5,6 +5,8 @@
  */
 package com.meicompany.pi.realtime.vehicle;
 
+import com.meicompany.pi.coordinates.Earth;
+
 /**
  *
  * @author mpopescu
@@ -12,7 +14,7 @@ package com.meicompany.pi.realtime.vehicle;
 public abstract class VehicleDynamics implements Dynamics6Dof {
     protected final Vehicle vehicle;
     
-    protected final EarthModel earth;
+    protected final Earth earth;
     
     protected double[] velocity_body_frame;
     protected double[] rpw_body_frame;
@@ -29,7 +31,7 @@ public abstract class VehicleDynamics implements Dynamics6Dof {
     protected double[] moments_body_frame; // roll moment, pitch moment, yaw moment
     protected double[] forces_body_frame; // 
     
-    public VehicleDynamics(Vehicle vehicle, EarthModel earth) {
+    public VehicleDynamics(Vehicle vehicle, Earth earth) {
         this.vehicle = vehicle;
         this.earth = earth;
     }
