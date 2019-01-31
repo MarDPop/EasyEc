@@ -48,7 +48,7 @@ public final class ECEF extends Coordinates {
     }
     
     public ECI toECI() {
-        double angle = spherical[2] + Epoch.earthRotationAngle(time);
+        double angle = spherical[2] + Epoch.getEarthRotationAngle(time);
         double[] x = new double[3];
         x[0] = spherical[0]*Math.cos(angle)*Math.sin(spherical[1]);
         x[1] = spherical[0]*Math.sin(angle)*Math.sin(spherical[1]);

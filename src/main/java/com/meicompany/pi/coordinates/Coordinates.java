@@ -15,7 +15,7 @@ import static java.lang.Math.tan;
  * @author mpopescu
  */
 public abstract class Coordinates {
-    
+    // ALL FUNCTIONS ASSUME RADIAN INPUT 
     
     protected int epoch;
     protected double time;
@@ -37,13 +37,24 @@ public abstract class Coordinates {
         return time;
     }
     
+    /**
+     * Sets the coordinates
+     * @param coordinates 
+     */
     public void set(double[] coordinates){
         if(coordinates.length != 3) {
-            throw new InstantiationError("must provide x y z");
+            throw new InstantiationError("must provide 3 dimensions");
         }
         System.arraycopy(coordinates, 0, this.x, 0, 3);
     }
     
+    /** 
+     * Generic spherical to cartesian
+     * @param radius
+     * @param polarAngle
+     * @param azimuthAngle
+     * @return 
+     */
     public static double[] spherical2cartesian(double radius, double polarAngle, double azimuthAngle) {
         double[] out = new double[3];
         out[0] = radius*Math.cos(azimuthAngle)*Math.sin(polarAngle);
@@ -52,6 +63,13 @@ public abstract class Coordinates {
         return out;
     }
     
+    /** 
+     * Generic 3d cartesian to spherical
+     * @param x
+     * @param y
+     * @param z
+     * @return 
+     */
     public static double[] cartesian2spherical(double x, double y, double z) {
         double[] out = new double[3];
         out[0] = Math.sqrt(x*x+y*y+z*z);
@@ -60,50 +78,68 @@ public abstract class Coordinates {
         return out;
     }
 
-    public static double[][] convert2Rlonglat(double[] x, double[] y, double[] z, double[] time) {
-        int n = x.length;
-        double[][] out = new double[n][3];
-        for (int i = 1; i < n; i++) {
-            out[i] = convert2Rlonglat(x[i], y[i], z[i], time[i]);
-        }
-        return out;
-    }
-
-    public static double[] convert2Rlonglat(double x, double y, double z, double time) {
-        double[] out = new double[3];
-        out[0] = sqrt(x * x + y * y + z * z);
-        out[1] = atan2(y, x) + Earth.EARTH_ROT * time;
-        out[2] = asin(z / out[0]);
-        return out;
-    }
-
+    /**
+     * Gets the appoximate length of degree latitude from latitude (radians)
+     * @param latitude
+     * @return 
+     */
     public static double lengthDegreeLat(double latitude) {
         return 111132.92 - 559.82 * cos(2 * latitude) + 1.175 * cos(4 * latitude) - 0.0023 * cos(6 * latitude);
     }
 
+    /**
+     * Converts the xy coordinates to latitude and longitude
+     * @param xy
+     * @return 
+     */
     public static double[] xy2ll(double[] xy) {
         double[] out = new double[2];
         out[0] = xy[1] / 6371000;
         out[1] = xy[0] / (6383485.515566318 * cos(out[0]) - 5357.155384473197 * cos(3 * out[0]) + 6.760901982543714 * cos(5 * out[0]));
         return out;
     }
-
-    public static double flatEarthDistance(double long1, double lat1, double long2, double lat2) {
+    
+    /**
+     * Gets distance between two latitude and longitude coordinates (at sea level assuming spherical)
+     * @param long1
+     * @param lat1
+     * @param long2
+     * @param lat2
+     * @return 
+     */
+    public static double earthDistanceSpherical(double long1, double lat1, double long2, double lat2) {
         return Earth.EARTH_AVG_D * asin(sqrt(Helper.haversin(lat2 - lat1) - cos(lat1) * cos(lat2) * Helper.haversin(long2 - long1)));
     }
-
-    public static double flatEarthDistance(double[] xyz1, double[] xyz2) {
-        return Earth.EARTH_AVG_D * asin(sqrt(1 - Helper.dot(xyz1, xyz2)) / Earth.EARTH_AVG_D * Earth.EARTH_AVG_R);
+    
+    /**
+     * Gets distance between two ecef coordinates (at sea level assuming spherical)
+     * @param ecef1
+     * @param ecef2
+     * @return 
+     */
+    public static double earthDistanceSpherical(double[] ecef1, double[] ecef2) {
+        return Earth.EARTH_AVG_D * asin(sqrt(1 - Helper.dot(ecef1, ecef2)) / Earth.EARTH_AVG_D * Earth.EARTH_AVG_R);
     }
-
-    public static double[] flatEarthXY(double longitude, double latitude) {
+    
+    /**
+     * Converts latitude and longitude to xy coordinates assuming spherical earth
+     * @param longitude
+     * @param latitude
+     * @return 
+     */
+    public static double[] ll2xySpherical(double longitude, double latitude) {
         double[] out = new double[2];
         double R = seaLevel(latitude);
         out[1] = R * longitude;
         out[0] = R * cos(latitude) * longitude;
         return out;
     }
-
+    
+    /**
+     * Converts latitude and longitude to x and y coordinates 
+     * @param ll
+     * @return 
+     */
     public static double[] ll2xy(double[] ll) {
         double[] out = new double[2];
         out[0] = (6383485.515566318 * cos(ll[0]) - 5357.155384473197 * cos(3 * ll[0]) + 6.760901982543714 * cos(5 * ll[0])) * ll[1];
@@ -111,12 +147,24 @@ public abstract class Coordinates {
         return out;
     }
 
+    /**
+     * Gets sea level at latitude assuming ellipsoid earth
+     * @param latitude
+     * @return 
+     */
     public static double seaLevel(double latitude) {
         double a = cos(latitude) / 6378137;
         double b = sin(latitude) / 6356752.3;
         return 1 / sqrt(a * a + b * b);
     }
 
+    /**
+     * Gets ecef coordinate from geodetic assuming ellipsoid earth
+     * @param longitude
+     * @param latitude
+     * @param h
+     * @return 
+     */
     public static double[] geodetic2ecef(double longitude, double latitude, double h) {
         double s = sin(latitude);
         double n = Earth.EARTH_EQUATOR_R / sqrt(1 - Earth.e2 * s * s);
@@ -127,9 +175,17 @@ public abstract class Coordinates {
         return ecef;
     }
 
+    /**
+     * Accurate distance between two latitude and longitudes on earth
+     * @param long1
+     * @param lat1
+     * @param long2
+     * @param lat2
+     * @return 
+     */
     public static double vincentyFormulae(double long1, double lat1, double long2, double lat2) {
-        double U1 = atan((1 - Earth.EARTH_F) * tan(lat1));
-        double U2 = atan((1 - Earth.EARTH_F) * tan(lat2));
+        double U1 = atan((1 - Earth.EARTH_FLATTENING) * tan(lat1));
+        double U2 = atan((1 - Earth.EARTH_FLATTENING) * tan(lat2));
         double L = long2 - long1;
         double l = L;
         double calpha;
@@ -152,8 +208,8 @@ public abstract class Coordinates {
             b = cu2 * cu1 * sin(l) / st;
             calpha = 1 - b * b;
             d = ct - 2 * su1 * su2 / calpha;
-            double C = Earth.EARTH_F / 16 * calpha * (4 + Earth.EARTH_F * (4 - 3 * calpha));
-            l = L + (1 - C) * Earth.EARTH_F * b * (a + C * st * (d + C * ct * (2 * d - 1)));
+            double C = Earth.EARTH_FLATTENING / 16 * calpha * (4 + Earth.EARTH_FLATTENING * (4 - 3 * calpha));
+            l = L + (1 - C) * Earth.EARTH_FLATTENING * b * (a + C * st * (d + C * ct * (2 * d - 1)));
         }
         double u2 = calpha * (Earth.EARTH_EQUATOR_R * Earth.EARTH_EQUATOR_R / (Earth.EARTH_POLAR_R * Earth.EARTH_POLAR_R) - 1);
         double A = 1 - u2 / 16384 * (4096 + u2 * (-768 + u2 * (320 - 175 * u2)));
@@ -162,28 +218,16 @@ public abstract class Coordinates {
         return Earth.EARTH_POLAR_R * A * (a - L);
     }
 
+    /**
+     * Gets geodetic coordinates from ecef
+     * @param ecef
+     * @return 
+     */
     public static double[] ecef2geo(double[] ecef) {
-        double g;
-        double rg;
-        double rf;
-        double u;
-        double v;
-        double m;
-        double f;
-        double p;
-        double x;
-        double y;
-        double z;
-        double zp;
-        double w2;
-        double w;
-        double r2;
-        double r;
-        double s2;
-        double c2;
-        double s;
-        double c;
-        double ss;
+        double g, rg, rf,u, v, m, f, p;
+        double x, y, z, zp;
+        double w2, w, r2,r;
+        double s2, c2, s, c, ss;
         double[] geo = new double[3]; //Results go here (Lat, Lon, Altitude)
         x = ecef[0];
         y = ecef[1];
@@ -225,10 +269,20 @@ public abstract class Coordinates {
         return geo; //Return Lat, Lon, Altitude in that order
     }
 
+    /**
+     * Earth sidereal rotation angle from UT1 (julian days) time
+     * @param UT1
+     * @return 
+     */
     public static double era(double UT1) {
         return Helper.TWOPI * (0.779057273264 + 1.0027378119113546 * (UT1 - 2451545));
     }
 
+    /**
+     * Length of degree longitude from latitude (radians)
+     * @param latitude
+     * @return 
+     */
     public static double lengthDegreeLong(double latitude) {
         return 111412.84 * cos(latitude) - 93.5 * cos(3 * latitude) + 0.118 * cos(5 * latitude);
     }

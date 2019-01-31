@@ -5,8 +5,8 @@
  */
 package com.meicompany.pi.realtime.fragment;
 
+import static com.meicompany.pi.realtime.Helper.atan2Fast;
 import com.meicompany.pi.realtime.OdeAtmosphere;
-import static java.lang.Math.atan2;
 import static java.lang.Math.cos;
 import static java.lang.Math.exp;
 import static java.lang.Math.sin;
@@ -233,7 +233,7 @@ public final class FragmentWithOdeDemise {
         r_[0] = x[0]/R;
         r_[1] = x[1]/R;
         r_[2] = x[2]/R;
-        h = atan2(x[1],x[0]);
+        h = atan2Fast(x[1],x[0]); // Major POINT OF SLOWDOWN
         double cl = cos(h);
         double sl = sin(h);
         double b = Math.sqrt(1-r_[2]*r_[2]);

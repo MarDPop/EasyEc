@@ -4,6 +4,7 @@
  * and open the template in the editor.
  */
 
+import com.meicompany.pi.realtime.Helper;
 import java.util.Random;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -45,46 +46,30 @@ public class NewEmptyJUnitTest {
     // public void hello() {}
     @Test
     public void profileMe() {
-
-        double sum;
-        int number = 100000000;
-        Random rand = new Random();
+        double[] u = new double[]{ 1.2, 4.0 , 6.0};
+        double[] v = new double[]{ 5.2, 2.1 , -3.3};
+        float a = 0.55f;
+        float b = 0.73f;
+        float c = -0.98f;
+        
+        int iterations = 1000000;
+        double ans = 0;
         
         long start = System.nanoTime();
-        sum = 0;
-        for(int i = 0; i < number;i++){
-            for(int j = 2; j >= 0;j--){
-                sum += j*i;
-            }
+        for(int i = 0; i < iterations;i++) {
+            ans = Math.acos(c);
         }
         long finish = System.nanoTime();
-        System.out.println((finish-start)/1e6+" ms run time " +sum);
+
+        System.out.println((finish-start)/1e6+" ms run time "+ans);
         
         start = System.nanoTime();
-        sum = 0;
-        for(int i = 0; i < number;i++){
-            for(int j = 0; j < 3;j++){
-                sum += j*i;
-            }
+        for(int i = 0; i < iterations;i++) {
+            ans = Helper.acos(c);
         }
         finish = System.nanoTime();
-        System.out.println((finish-start)/1e6+" ms run time "+sum);
-        
-        start = System.nanoTime();
-        sum = 0;
-        for(int i = 0; i < number;i++){
-            sum = Math.random();
-        }
-        finish = System.nanoTime();
-        System.out.println((finish-start)/1e6+" ms run time "+sum);
-        
-        start = System.nanoTime();
-        sum = 0;
-        for(int i = 0; i < number;i++){
-            sum = rand.nextFloat();
-        }
-        finish = System.nanoTime();
-        System.out.println((finish-start)/1e6+" ms run time "+sum);
+
+        System.out.println((finish-start)/1e6+" ms run time "+ans);
         
     }
 }

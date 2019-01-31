@@ -34,7 +34,7 @@ public class SphericalDistribution1D extends Centroid{
     }
     
     public double distance(double[] r) {
-        return Coordinates.flatEarthDistance(location, r);
+        return Coordinates.earthDistanceSpherical(location, r);
     }
     
     public void addPoint(double[] r, double d) {
@@ -51,7 +51,7 @@ public class SphericalDistribution1D extends Centroid{
     }
     
     public double getProbability(double[] r){
-        double d = Coordinates.flatEarthDistance(location, r);
+        double d = Coordinates.earthDistanceSpherical(location, r);
         return weight/(2*Math.PI*stats[0])*Math.exp(-d*d/stats[0]/2);
     }
 }

@@ -99,7 +99,7 @@ public class KMeansSpherical {
                 int i_found  = 0;
                 double d_min = 7;
                 for(int i = 0; i < nTotal; i++) {
-                    double d = Coordinates.flatEarthDistance(point[0],centroids[i][0],point[1],centroids[i][1]);
+                    double d = Coordinates.earthDistanceSpherical(point[0],centroids[i][0],point[1],centroids[i][1]);
                     if (d < d_min) {
                         i_found = i;
                         d_min = d;

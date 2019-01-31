@@ -64,7 +64,7 @@ public class NodeSphere {
     }
     
     public double distance(double longitude, double latitude) {
-        return Coordinates.flatEarthDistance(longitude, latitude, this.longitude, this.latitude);
+        return Coordinates.earthDistanceSpherical(longitude, latitude, this.longitude, this.latitude);
     }
     
     public void setValue(double value) {

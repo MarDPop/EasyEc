@@ -36,7 +36,7 @@ public class SphericalDistribution extends Centroid{
     }
     
     public double distance(double[] r) {
-        return Coordinates.flatEarthDistance(location, r);
+        return Coordinates.earthDistanceSpherical(location, r);
     }
     
     public void addPoint(double[] r, double d, int i) {

@@ -43,7 +43,7 @@ public class CentroidPi {
     }
     
     public double calcAtLatLong(double latitude, double longitude) {
-        double[] xy = Coordinates.flatEarthXY(latitude,longitude);
+        double[] xy = Coordinates.ll2xySpherical(latitude,longitude);
         return calcAt(xy[0],xy[1]);
     }
 }

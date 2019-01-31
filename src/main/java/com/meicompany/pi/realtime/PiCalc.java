@@ -87,7 +87,7 @@ public class PiCalc {
         double speed0 = norm(v0);
         double R = norm(x0);
         double[] r_ = divide(x0, R);
-        double lat_ecef = asin(r_[2]);
+        double lat_ecef = Math.asin(r_[2]);
         double long_ecef = atan2(r_[1],r_[0]);
         
         // Local Coordinate Frame Vectors (East, North, [Up is already done])
@@ -101,7 +101,7 @@ public class PiCalc {
         double speed_vertical = dot(v0,r_);
         double speed_north = dot(v0,n_);
         double speed_east = v0[0]*e_[0]+v0[1]*e_[1]; // this might be microptimizing but saves 2 operations 
-        double pitch = asin(speed_vertical/speed0);
+        double pitch = Helper.asin(speed_vertical/speed0);
         double heading = atan2(speed_north,speed_east);
         // Repeated Parameters
         double[] g0 = multiply(r_,-9.8);
@@ -174,7 +174,7 @@ public class PiCalc {
     
     public double calcAtLatLong2d(double latitude, double longitude) {
         double sum = 0;
-        double[] xy = Coordinates.flatEarthXY(latitude,longitude);
+        double[] xy = Coordinates.ll2xySpherical(latitude,longitude);
         for(int i = 0; i < numberCentroids; i++) {
             double dx = xy[0] - centroids[i][0];
             double dy = xy[1] - centroids[i][1];

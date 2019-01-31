@@ -7,7 +7,6 @@ package com.meicompany.pi.realtime.vehicle;
 
 import com.meicompany.pi.coordinates.Earth;
 import com.meicompany.pi.realtime.Helper;
-import java.util.ArrayList;
 
 /**
  *
@@ -42,10 +41,9 @@ public class Vehicle {
     
     protected Earth earth;
     
-    protected double[] wind;
+    //protected double[] wind;
     
     protected double[] velocity_body_frame;
-    protected double[] rpw_body_frame;
     
     protected double angle_of_attack;
     protected double side_slip;
@@ -56,10 +54,10 @@ public class Vehicle {
     protected double thrust;
     protected double sideForce;
     
-    protected ArrayList<Structure> components = new ArrayList<>();
-    
-    public Vehicle(double[][] inertia){
-        this.inertia = inertia;
+    public void setInertia(double[][] inertia) {
+        for(int i = 0; i < 3; i++) {
+            System.arraycopy(inertia[i], 0, this.inertia[i], 0, 3);
+        }
         calcInertiaInverse();
     }
     
@@ -161,6 +159,22 @@ public class Vehicle {
         this.rotationMatrixECI2Body[2][2] = c1*c2;
         this.rotationMatrixBody2ECI[2][2] = this.rotationMatrixECI2Body[0][0];
         
+    }
+    
+    public double[] vectorInECI(double[] vec) {
+        double[] eci = new double[3];
+        eci[0] = rotationMatrixBody2ECI[0][0]*vec[0]+rotationMatrixBody2ECI[0][1]*vec[1]+rotationMatrixBody2ECI[0][2]*vec[2];
+        eci[1] = rotationMatrixBody2ECI[1][0]*vec[0]+rotationMatrixBody2ECI[1][1]*vec[1]+rotationMatrixBody2ECI[1][2]*vec[2];
+        eci[2] = rotationMatrixBody2ECI[2][0]*vec[0]+rotationMatrixBody2ECI[2][1]*vec[1]+rotationMatrixBody2ECI[2][2]*vec[2];
+        return eci;
+    }
+    
+    public double[] vectorInBody(double[] vec) {
+        double[] eci = new double[3];
+        eci[0] = rotationMatrixECI2Body[0][0]*vec[0]+rotationMatrixECI2Body[0][1]*vec[1]+rotationMatrixECI2Body[0][2]*vec[2];
+        eci[1] = rotationMatrixECI2Body[1][0]*vec[0]+rotationMatrixECI2Body[1][1]*vec[1]+rotationMatrixECI2Body[1][2]*vec[2];
+        eci[2] = rotationMatrixECI2Body[2][0]*vec[0]+rotationMatrixECI2Body[2][1]*vec[1]+rotationMatrixECI2Body[2][2]*vec[2];
+        return eci;
     }
 
 }
