@@ -67,7 +67,7 @@ public class PiCalc {
             fragments.add(new FragmentWithOde(atm));
         }
         this.numberTurns = 6;
-        this.impacts = new double[numberFragments*numberTurns][4]; // x, y , z, time;
+        this.impacts = new double[numberFragments*numberTurns][4]; // The indexes are : x y z time
         this.impacts2D = new double[numberFragments*numberTurns][2];
     }
     

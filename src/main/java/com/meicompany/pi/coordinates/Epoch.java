@@ -38,7 +38,7 @@ public class Epoch {
      * @param julianUT1
      * @return 
      */
-    public static double GMST(double julianUT1) {
+    public static double getGMST(double julianUT1) {
         //http://aa.usno.navy.mil/faq/docs/GAST.php
         int JD0 = (int)julianUT1;
         double H = (julianUT1-JD0)*24;
@@ -51,14 +51,14 @@ public class Epoch {
      * @param julianUT1
      * @return 
      */
-    public static double GAST(double julianUT1) {
+    public static double getGAST(double julianUT1) {
         double D = julianUT1-J2000_JULIAN_TIME;
         double o = 125.04 - 0.052954*D;
         double L = 280.47 + 0.98565*D;
         double e = 23.4393 - 0.0000004*D;
         double d = -0.000319*Math.sin(Math.toRadians(o)) - 0.000024*Math.sin(Math.toRadians(2*L)); 
         double eqeq = d*Math.cos(Math.toRadians(e));
-        return GMST(julianUT1)+eqeq;
+        return getGMST(julianUT1)+eqeq;
     }
     
     /**
@@ -89,7 +89,7 @@ public class Epoch {
     public static int getJulianDayFromGregorianYMD(int Y, int M, int D) {
         // All of these must be integer divisions
         int M2 = (M-14)/12;
-        return (1461*(Y+4800+M2))/4+(367*(M-2-12*M2))/4 - (3*((Y+4900+M2/100)))/4 + D - 32075;
+        return (1461*(Y+4800+M2))/4+(367*(M-2-12*M2))/4 - (3*(Y+4900+M2/100))/4 + D - 32075;
     }
     
 }

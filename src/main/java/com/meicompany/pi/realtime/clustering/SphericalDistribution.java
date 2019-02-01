@@ -48,10 +48,6 @@ public class SphericalDistribution extends Centroid{
         this.ids.add(i);
     }
     
-    public int getNumber() {
-        return n;
-    }
-    
     public double[] calcStats(ArrayList<double[]> points) {
         directionVector1 = new double[3];
         directionVector2 = new double[3];

@@ -1,10 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.meicompany.pi.realtime.fragment;
 
+import com.meicompany.pi.realtime.ode.ODEOptions;
 import com.meicompany.pi.realtime.ode.util.Material;
 import com.meicompany.pi.realtime.ode.util.OdeAtmosphere;
 import static java.lang.Math.cos;
@@ -21,7 +17,6 @@ import java.util.Random;
 public final class FragmentWithOdeDemise {
     private final Random rand = new Random();
     
-    
     private final Material material;
     private double tempWall;
     
@@ -35,9 +30,9 @@ public final class FragmentWithOdeDemise {
     private final double explosionSpeed;
     private final double lift2drag;
     
-    private final double[] machTable = new double[]{0.3, 0.5, 0.8, 0.9, 1, 1.4, 2, 4, 5, 10};
-    private final double[] drag2mach = new double[]{1.0000000,0.971428592,0.886956541,0.85955058,0.711627922,0.528497421,0.488038288,0.525773207,0.512562825,0.506622527};
-    private final double[] dBdM = new double[] {-0.14285704,-0.281573503,-0.27405961,-1.47922658,-0.457826253,-0.067431888,0.01886746,-0.013210382,-0.00118806};
+    private static final double[] MACH_TABLE = new double[]{0.3, 0.5, 0.8, 0.9, 1, 1.4, 2, 4, 5, 10};
+    private static final double[] DRAG_TABLE = new double[]{1.0000000,0.971428592,0.886956541,0.85955058,0.711627922,0.528497421,0.488038288,0.525773207,0.512562825,0.506622527};
+    private static final double[] DBCDM_TABLE = new double[] {-0.14285704,-0.281573503,-0.27405961,-1.47922658,-0.457826253,-0.067431888,0.01886746,-0.013210382,-0.00118806};
     
     // Initial
     private final double[] x = new double[3];
@@ -48,15 +43,13 @@ public final class FragmentWithOdeDemise {
     // Time
     private double dt;
     private double time;
-    
-    // Options
-    private double tol;
-    private double minTimestep;
-    private double maxTimestep;
+    private final double maxTimestep;
+    private final double minTimestep;
+    private final double tol;
     
     // Parameters
     private double h;
-    private double R;
+    private double radius;
     private double airspeed;
     
     public static final double EARTH_MU = 3.986004418e14;
@@ -78,29 +71,30 @@ public final class FragmentWithOdeDemise {
     final double[] e_ = new double[3];
     final double[] n_ = new double[3];
     
-    public FragmentWithOdeDemise(FragmentOptions options, OdeAtmosphere atm) {
+    
+    public FragmentWithOdeDemise(FragmentOptions fragOptions, OdeAtmosphere atm, ODEOptions odeOptions) {
         this.densities = atm.densities;
         this.soundSpeed = atm.speedSound;
         this.winds = atm.winds;
         // Time Defaults
         this.dt = 2;
-        this.maxTimestep = 10;
+        this.maxTimestep = odeOptions.getMaxTimestep();
         this.minTimestep = bc*1e-6;
-        this.tol = 3e-4;
+        this.tol = odeOptions.getTolerance();
         // Atm defaults
         this.temp_low = 287;
         this.temp_high = 216.7;
         this.speedSound_high = sqrt(401.37*temp_high);
         this.speedSound_low = sqrt(401.37*temp_low);
         // Demise Properties
-        this.cD = options.getDragCoefficient();
-        this.pseudoRadius = options.getCharacteristicLength();
-        this.bc_initial = options.getBallisticCoefficient();
-        this.material = options.getMaterial();
-        this.density = material.getDensity()*options.getHollownessFactor();
+        this.cD = fragOptions.getDragCoefficient();
+        this.pseudoRadius = fragOptions.getCharacteristicLength();
+        this.bc_initial = fragOptions.getBallisticCoefficient();
+        this.material = fragOptions.getMaterial();
+        this.density = material.getDensity()*fragOptions.getHollownessFactor();
         //Random 
-        this.explosionSpeed = options.getExplosionSpeed();
-        this.lift2drag = options.getLift2DragRatio();
+        this.explosionSpeed = fragOptions.getExplosionSpeed();
+        this.lift2drag = fragOptions.getLift2DragRatio();
     }
     
     /**
@@ -141,8 +135,8 @@ public final class FragmentWithOdeDemise {
                 return bc;
             } else {
                 int count = 10; //BCs.length
-                while(machTable[--count] > mach);
-                return drag2mach[count] + (mach - machTable[count])*dBdM[count];
+                while(MACH_TABLE[--count] > mach);
+                return DRAG_TABLE[count] + (mach - MACH_TABLE[count])*DBCDM_TABLE[count];
             }
         }
     }
@@ -195,7 +189,7 @@ public final class FragmentWithOdeDemise {
         // Explosion
         double angle1 = rand.nextFloat()*TWOPI;
         double angle2 = rand.nextFloat()*TWOPI;
-        //double[] dv = new double[]{frag.explosionSpeed()*cos(angle1)*cos(angle2), frag.explosionSpeed()*cos(angle1)*sin(angle2), frag.explosionSpeed()*sin(angle1)};
+        
         // Add explosion to velocity
         double dv = explosionSpeed*cos(angle1);
         v[1] += dv*sin(angle2);
@@ -230,12 +224,12 @@ public final class FragmentWithOdeDemise {
     private void calcA() {
         h = x[0]*x[0]+x[1]*x[1];
         double R2 = h+x[2]*x[2];
-        R = sqrt(R2);
+        radius = sqrt(R2);
 
         // Get unit vectors
-        r_[0] = x[0]/R;
-        r_[1] = x[1]/R;
-        r_[2] = x[2]/R;
+        r_[0] = x[0]/radius;
+        r_[1] = x[1]/radius;
+        r_[2] = x[2]/radius;
         h = Math.sqrt(h); 
         double cl = x[0]/h;
         double sl = x[1]/h;
@@ -251,7 +245,7 @@ public final class FragmentWithOdeDemise {
         h = r_[2]/6356752.3;
         h = 1/sqrt(b*b+h*h);
         
-        h = (R-h)*h/R;
+        h = (radius-h)*h/radius;
         
         // Atmospheric density and wind        
         if (h > 1.2e5) {
@@ -291,21 +285,21 @@ public final class FragmentWithOdeDemise {
             }
         }
 
-        double[] v_free = new double[3];
-        v_free[0] = -v[0] - x[1]*7.29211505392569e-05 + wind[0];
-        v_free[1] = -v[1] + x[0]*7.29211505392569e-05 + wind[1];
-        v_free[2] = -v[2] + wind[2];
+        double[] freestreamVelocity = new double[3];
+        freestreamVelocity[0] = -v[0] - x[1]*7.29211505392569e-05 + wind[0];
+        freestreamVelocity[1] = -v[1] + x[0]*7.29211505392569e-05 + wind[1];
+        freestreamVelocity[2] = -v[2] + wind[2];
         
-        airspeed = norm(v_free);
+        airspeed = norm(freestreamVelocity);
         double mach = airspeed/b;
         
         demise();
         double drag = rho*airspeed/bc(mach);
         double lift = drag*lift2drag*airspeed;
         lift -= EARTH_MU/R2;
-        a[0] = drag*v_free[0]+lift*r_[0];
-        a[1] = drag*v_free[1]+lift*r_[1];
-        a[2] = drag*v_free[2]+lift*r_[2];
+        a[0] = drag*freestreamVelocity[0]+lift*r_[0];
+        a[1] = drag*freestreamVelocity[1]+lift*r_[1];
+        a[2] = drag*freestreamVelocity[2]+lift*r_[2];
     }
     
     private void stepSize() {
@@ -319,10 +313,10 @@ public final class FragmentWithOdeDemise {
     }
     
     private void groundImpact() {
-        double time_past_impact = h/airspeed; // speed is approximately vertical
-        x[0] -= v[0]*time_past_impact;
-        x[1] -= v[1]*time_past_impact;
-        x[2] -= v[2]*time_past_impact;
+        double timePastImpact = h/airspeed; // speed is approximately vertical
+        x[0] -= v[0]*timePastImpact;
+        x[1] -= v[1]*timePastImpact;
+        x[2] -= v[2]*timePastImpact;
     }
     
     public double[] impact() {

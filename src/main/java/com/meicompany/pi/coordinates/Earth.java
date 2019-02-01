@@ -90,11 +90,11 @@ public class Earth {
     }
     
     public static double getWGS84Gravity(double[] ecef) {
-        
+        return 0;
     }
     
     public static double[] getEGM96Gravity(double[] ecef) {
-        
+        return new double[]{};
     }
     
     /**
@@ -138,5 +138,6 @@ public class Earth {
         double angle = Helper.angleQuick(ecef,getEarthDipoleVector()); // quick angle used here since accuracy isn't crucial
         double r = EARTH_AVG_R/Helper.norm(ecef);
         double B_r = -6.24e-5*r*r*r*Math.cos(angle);
+        return new double[]{};
     }
 }

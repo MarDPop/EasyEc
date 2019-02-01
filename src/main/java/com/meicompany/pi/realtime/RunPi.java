@@ -28,12 +28,13 @@ public class RunPi {
         try {
             traj.load("src/main/resources/trajplot_i28_asc_m100_ksc15.csv");
         } catch (IOException e) {
-            
+            Logger.getLogger(RunPi.class.getName()).log(Level.SEVERE, null, e);
         }
         long start = System.nanoTime();
         //NodeMap map = testSingle(traj);
         NodeMap map = testMultiple(traj);
         long finish = System.nanoTime();
+        Logger.getLogger(RunPi.class.getName()).log(Level.INFO, (finish-start)/1e6+" ms run time");
         map.printCsv();
         JSONObject jmap = map.toJson(true);
         try (FileWriter file = new FileWriter("map.json")) {
@@ -41,7 +42,6 @@ public class RunPi {
             } catch (IOException ex) {
                 Logger.getLogger(RunPi.class.getName()).log(Level.SEVERE, null, ex);
         }
-        System.out.println((finish-start)/1e6+" ms run time");
     }
     
     private static NodeMap testSingle(Trajectory traj) {
