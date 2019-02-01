@@ -5,12 +5,13 @@
  */
 package com.meicompany.pi.realtime;
 
+import com.meicompany.pi.realtime.ode.util.OdeAtmosphere;
 import com.meicompany.pi.realtime.artifacts.BoundingBox;
 import com.meicompany.pi.coordinates.CoordinateException;
 import com.meicompany.pi.coordinates.Coordinates;
 import com.meicompany.pi.realtime.clustering.KMeans;
 import com.meicompany.pi.realtime.fragment.FragmentWithOde;
-import com.meicompany.pi.realtime.map.util.NodeFlat;
+import com.meicompany.pi.realtime.map.util.Node;
 import com.meicompany.pi.realtime.map.util.NodeMap;
 import static com.meicompany.pi.realtime.Helper.*;
 import com.meicompany.pi.realtime.clustering.CentroidPi;
@@ -75,7 +76,7 @@ public class PiCalc {
         System.arraycopy(x0, 0, this.x0, 0, 3);
         System.arraycopy(v0, 0, this.v0, 0, 3);
         this.time = time;
-        testTraj.add(Helper.impactECEF2XY(x0)); 
+        testTraj.add(Helper.ecef2xy(x0)); 
     }
     
     
@@ -256,8 +257,8 @@ public class PiCalc {
         double d = 5*Math.sqrt(maxSigma)+Math.sqrt(xMax*xMax+yMax*yMax);
         d = Math.ceil(d/1000)*1000;
         NodeMap map = new NodeMap(xC,yC,20,20,d/20);
-        for(NodeFlat[] row : map.nodes){
-            for(NodeFlat col : row) {
+        for(Node[] row : map.nodes){
+            for(Node col : row) {
                 testNode(col,1e-12);
             }
         }
@@ -270,8 +271,8 @@ public class PiCalc {
         double d = 3*Math.sqrt(stats[2] + stats[3]);
         int delta = 20;
         NodeMap map = new NodeMap(stats[0],stats[1],delta,delta,d/delta);
-        for(NodeFlat[] row : map.nodes){
-            for(NodeFlat col : row) {
+        for(Node[] row : map.nodes){
+            for(Node col : row) {
                 testNodeMultiple(col,1e-12);
             }
         }
@@ -310,18 +311,18 @@ public class PiCalc {
         return stats;
     }
     
-    private void testNode(NodeFlat n, double tol) {
+    private void testNode(Node n, double tol) {
         double prob = calcAtXY2d(n.x,n.y);
         n.setValue(prob);
         if (prob > tol) {
             n.divide();
-            for(NodeFlat c : n.getChildren()) {
+            for(Node c : n.getChildren()) {
                 testNode(c,tol*5);
             }
         }
     }
     
-    private void testNodeMultiple(NodeFlat n, double tol) {
+    private void testNodeMultiple(Node n, double tol) {
         double prob = 0;
         for(CentroidPi[] list : runs.values()){
             for(CentroidPi c : list) {
@@ -336,7 +337,7 @@ public class PiCalc {
         n.setValue(prob);
         if (prob > tol) {
             n.divide();
-            for(NodeFlat c : n.getChildren()) {
+            for(Node c : n.getChildren()) {
                 testNodeMultiple(c,tol*5);
             }
         }

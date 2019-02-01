@@ -11,8 +11,6 @@ package com.meicompany.pi.realtime.vehicle;
  */
 public abstract class Propulsion extends Structure {
     
-    protected double[] thrust; // vector in direction and magnitude of thrust
-    
     public abstract double[] getThrust();
     
 }

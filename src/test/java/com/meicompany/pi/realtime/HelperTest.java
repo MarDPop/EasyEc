@@ -185,14 +185,14 @@ public class HelperTest {
     }
 
     /**
-     * Test of impactECEF2XY method, of class Helper.
+     * Test of ecef2xy method, of class Helper.
      */
     @Test
     public void testImpactECEF2XY() {
         System.out.println("impactECEF2XY");
         double[] ecef = null;
         double[] expResult = null;
-        double[] result = Helper.impactECEF2XY(ecef);
+        double[] result = Helper.ecef2xy(ecef);
         assertArrayEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");

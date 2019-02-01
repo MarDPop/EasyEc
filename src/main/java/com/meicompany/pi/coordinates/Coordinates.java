@@ -287,4 +287,14 @@ public abstract class Coordinates {
         return 111412.84 * cos(latitude) - 93.5 * cos(3 * latitude) + 0.118 * cos(5 * latitude);
     }
     
+    /**
+     * 
+     * @param phi
+     * @return 
+     */
+    public static double primeVerticalRadiusCurvature(double phi){
+        return Earth.EARTH_EQUATOR_R/Math.sqrt(1-Earth.e2*Math.sin(phi)*Math.sin(phi));
+    }
+    
+    
 }

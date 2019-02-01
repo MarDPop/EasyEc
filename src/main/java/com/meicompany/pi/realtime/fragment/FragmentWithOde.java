@@ -5,7 +5,7 @@
  */
 package com.meicompany.pi.realtime.fragment;
 
-import com.meicompany.pi.realtime.OdeAtmosphere;
+import com.meicompany.pi.realtime.ode.util.OdeAtmosphere;
 import static java.lang.Math.atan2;
 import static java.lang.Math.cos;
 import static java.lang.Math.exp;

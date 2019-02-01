@@ -27,7 +27,7 @@ public class NodeMap {
     final double yCenter;
     final int m;
     final int n;
-    final public NodeFlat[][] nodes;
+    final public Node[][] nodes;
     final double delta;
     
     private short lowestLevel;
@@ -37,21 +37,21 @@ public class NodeMap {
         this.yCenter = yCenter;
         this.m = m;
         this.n = n;
-        this.nodes = new NodeFlat[2*m+1][2*n+1];
+        this.nodes = new Node[2*m+1][2*n+1];
         this.delta = delta;
         for(int i = 0; i < (m+1); i++){
             for(int j = 0; j < (n+1); j++) {
-                nodes[m+i][n+j] = new NodeFlat(xCenter+i*delta,yCenter+j*delta,delta);
-                nodes[m+i][n-j] = new NodeFlat(xCenter+i*delta,yCenter-j*delta,delta);
+                nodes[m+i][n+j] = new Node(xCenter+i*delta,yCenter+j*delta,delta);
+                nodes[m+i][n-j] = new Node(xCenter+i*delta,yCenter-j*delta,delta);
             }
             for(int j = 0; j < (n+1); j++) {
-                nodes[m-i][n+j] = new NodeFlat(xCenter-i*delta,yCenter+j*delta,delta);
-                nodes[m-i][n-j] = new NodeFlat(xCenter-i*delta,yCenter-j*delta,delta);
+                nodes[m-i][n+j] = new Node(xCenter-i*delta,yCenter+j*delta,delta);
+                nodes[m-i][n-j] = new Node(xCenter-i*delta,yCenter-j*delta,delta);
             }
         }
     }
     
-    public NodeFlat getNodeAt(double x, double y) {
+    public Node getNodeAt(double x, double y) {
         int i = (int) ((x-xCenter)/delta)+m;
         int j = (int) ((y-yCenter)/delta)+n;
         return nodes[i][j];
@@ -64,7 +64,7 @@ public class NodeMap {
     public ArrayList<double[]> nodeGrid() {
         short depth = 0;
         ArrayList<double[]> points = new ArrayList<>();
-        for(NodeFlat[] row : nodes) {
+        for(Node[] row : nodes) {
             dive(points,row,depth);
         }
         return points;
@@ -92,12 +92,12 @@ public class NodeMap {
         return this.delta/(Math.pow(2, lowestLevel));
     }
     
-    private void dive(ArrayList<double[]> points, NodeFlat[] list, short depth) {
+    private void dive(ArrayList<double[]> points, Node[] list, short depth) {
         depth++;
         if (depth > lowestLevel) {
             lowestLevel = depth;
         }
-        for(NodeFlat child : list) {
+        for(Node child : list) {
             points.add(new double[]{child.x,child.y,child.getValue(),child.size});
             if(child.getChildren() != null) {      
                 dive(points, child.getChildren(),depth);

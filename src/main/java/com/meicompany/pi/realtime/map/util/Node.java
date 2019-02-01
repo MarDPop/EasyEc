@@ -9,29 +9,29 @@ package com.meicompany.pi.realtime.map.util;
  *
  * @author mpopescu
  */
-public class NodeFlat {
+public class Node {
     //of center
     public final double x;
     public final double y;
     public final double size;
     
-    private double value;
+    protected double value;
     
-    private NodeFlat parent = null;
-    private NodeFlat[] children = null;
+    protected Node parent = null;
+    protected Node[] children = null;
     
     public static final double UPPER_LEFT = 1;
     public static final double UPPER_RIGHT = 2;
     public static final double LOWER_LEFT = -1;
     public static final double LOWER_RIGHT = -2;
     
-    public NodeFlat(double x, double y, double size) {
+    public Node(double x, double y, double size) {
         this.x = x;
         this.y = y;
         this.size = size;
     }
     
-    public NodeFlat(NodeFlat parent, int corner) {
+    public Node(Node parent, int corner) {
         // 2 = upper right, 1 = upper left, -1 = lower left, -2 = lower right
         // 0 = upper right, 1 = upper left, 2 = lower left, 3 = lower right
         this.parent = parent;
@@ -48,15 +48,17 @@ public class NodeFlat {
             this.y = parent.y - this.size;
         }
     }
-    
+    /**
+     * creates children Nodes
+     */
     public void divide() {
-        this.setChildren(new NodeFlat[4]);
+        this.setChildren(new Node[4]);
         // 0 = upper right, 1 = upper left, 2 = lower left, 3 = lower right
         // children are in classical quadrant definition
-        this.getChildren()[0] = new NodeFlat(this,2);
-        this.getChildren()[1] = new NodeFlat(this,1);
-        this.getChildren()[2] = new NodeFlat(this,-1);
-        this.getChildren()[3] = new NodeFlat(this,-2);
+        this.getChildren()[0] = new Node(this,2);
+        this.getChildren()[1] = new Node(this,1);
+        this.getChildren()[2] = new Node(this,-1);
+        this.getChildren()[3] = new Node(this,-2);
     }
     
     public double distance(double x, double y) {
@@ -68,7 +70,7 @@ public class NodeFlat {
     public void setValue(double value) {
         this.value = value;
         if (getChildren() != null) {
-            for(NodeFlat child : getChildren()) {
+            for(Node child : getChildren()) {
                 child.setValue(value);
             }
         }
@@ -123,28 +125,28 @@ public class NodeFlat {
     /**
      * @return the parent
      */
-    public NodeFlat getParent() {
+    public Node getParent() {
         return parent;
     }
 
     /**
      * @param parent the parent to set
      */
-    public void setParent(NodeFlat parent) {
+    public void setParent(Node parent) {
         this.parent = parent;
     }
 
     /**
      * @return the children
      */
-    public NodeFlat[] getChildren() {
+    public Node[] getChildren() {
         return children;
     }
 
     /**
      * @param children the children to set
      */
-    public void setChildren(NodeFlat[] children) {
+    public void setChildren(Node[] children) {
         this.children = children;
     }
     

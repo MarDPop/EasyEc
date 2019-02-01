@@ -5,82 +5,28 @@
  */
 package com.meicompany.pi.realtime.map.util;
 
-import com.meicompany.pi.coordinates.CoordinateException;
 import com.meicompany.pi.coordinates.Coordinates;
-import com.meicompany.pi.realtime.Helper;
 
 /**
  *
  * @author mpopescu
  */
-public class NodeSphere {
-    //of center
-    public final double longitude;
-    public final double latitude;
-    public final double size;
-    
-    private double value;
-    
-    private NodeSphere parent = null;
-    private NodeSphere[] children = null;
-    
-    public static final double UPPER_LEFT = 1;
-    public static final double UPPER_RIGHT = 2;
-    public static final double LOWER_LEFT = -1;
-    public static final double LOWER_RIGHT = -2;
+public class NodeSphere extends Node{
     
     public NodeSphere(double longitude, double latitude, double size) {
-        this.longitude = longitude;
-        this.latitude = latitude;
-        this.size = size;
+        super(longitude,latitude,size);
     }
     
     public NodeSphere(NodeSphere parent, int corner) {
-        // 2 = upper right, 1 = upper left, -1 = lower left, -2 = lower right
-        // 0 = upper right, 1 = upper left, 2 = lower left, 3 = lower right
-        this.parent = parent;
-        this.size = parent.size/2;
-        this.value = parent.getValue();
-        if (corner % 2 == 0) {
-            this.longitude = parent.longitude + this.size;
-        } else {
-            this.longitude = parent.longitude  - this.size;
-        }
-        if (corner > 0) {
-            this.latitude = parent.latitude + this.size;
-        } else {
-            this.latitude = parent.latitude - this.size;
-        }
+        super(parent,corner);
     }
     
-    public void divide() {
-        this.setChildren(new NodeSphere[4]);
-        // 0 = upper right, 1 = upper left, 2 = lower left, 3 = lower right
-        // children are in classical quadrant definition
-        this.getChildren()[0] = new NodeSphere(this,2);
-        this.getChildren()[1] = new NodeSphere(this,1);
-        this.getChildren()[2] = new NodeSphere(this,-1);
-        this.getChildren()[3] = new NodeSphere(this,-2);
-    }
-    
+    @Override
     public double distance(double longitude, double latitude) {
-        return Coordinates.earthDistanceSpherical(longitude, latitude, this.longitude, this.latitude);
+        return Coordinates.earthDistanceSpherical(longitude, latitude, this.x, this.y);
     }
     
-    public void setValue(double value) {
-        this.value = value;
-        if (getChildren() != null) {
-            for(NodeSphere child : getChildren()) {
-                child.setValue(value);
-            }
-        }
-        // might add a statement if parent to recalc average value ?
-    }
-    
-    public double getValue() {
-        return value;
-    }
-    
+    @Override
     public double getValue(double longitude, double latitude){
         if(getChildren() == null){
             if(getParent() == null) {
@@ -106,48 +52,20 @@ public class NodeSphere {
             }
         } else {
             // 0 = upper right, 1 = upper left, 2 = lower left, 3 = lower right
-            if(longitude < this.longitude) {
-                if(latitude < this.latitude) {
+            if(longitude < this.x) {
+                if(latitude < this.y) {
                     return getChildren()[2].getValue(longitude, latitude);
                 } else {
                     return getChildren()[1].getValue(longitude, latitude);
                 }
             } else {
-                if(latitude < this.latitude) {
+                if(latitude < this.x) {
                     return getChildren()[3].getValue(longitude, latitude);
                 } else {
                     return getChildren()[0].getValue(longitude, latitude);
                 }
             }
         }
-    }
-
-    /**
-     * @return the parent
-     */
-    public NodeSphere getParent() {
-        return parent;
-    }
-
-    /**
-     * @param parent the parent to set
-     */
-    public void setParent(NodeSphere parent) {
-        this.parent = parent;
-    }
-
-    /**
-     * @return the children
-     */
-    public NodeSphere[] getChildren() {
-        return children;
-    }
-
-    /**
-     * @param children the children to set
-     */
-    public void setChildren(NodeSphere[] children) {
-        this.children = children;
     }
     
 }

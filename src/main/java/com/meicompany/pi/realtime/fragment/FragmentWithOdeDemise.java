@@ -5,8 +5,8 @@
  */
 package com.meicompany.pi.realtime.fragment;
 
-import static com.meicompany.pi.realtime.Helper.atan2Fast;
-import com.meicompany.pi.realtime.OdeAtmosphere;
+import com.meicompany.pi.realtime.ode.util.Material;
+import com.meicompany.pi.realtime.ode.util.OdeAtmosphere;
 import static java.lang.Math.cos;
 import static java.lang.Math.exp;
 import static java.lang.Math.sin;
@@ -153,7 +153,9 @@ public final class FragmentWithOdeDemise {
      * @param airspeed 
      */
     private void demise() {
-        // Look for opportunity to precompute
+        // Assumptions... many. Most important : empirical formula that assumes
+        // round geometry, heating only on one side. Wall reaches radiative equilibrium only 
+        // 
         double qw = Math.sqrt(rho/pseudoRadius)*airspeed*airspeed*airspeed;
         if(qw > 1e8) {
             qw *= 1.7415e-4; //  W / m2  heat to wall Sutton Graves
@@ -226,16 +228,17 @@ public final class FragmentWithOdeDemise {
     
     
     private void calcA() {
-        double R2 = x[0]*x[0]+x[1]*x[1]+x[2]*x[2];
+        h = x[0]*x[0]+x[1]*x[1];
+        double R2 = h+x[2]*x[2];
         R = sqrt(R2);
 
         // Get unit vectors
         r_[0] = x[0]/R;
         r_[1] = x[1]/R;
         r_[2] = x[2]/R;
-        h = atan2Fast(x[1],x[0]); // Major POINT OF SLOWDOWN
-        double cl = cos(h);
-        double sl = sin(h);
+        h = Math.sqrt(h); 
+        double cl = x[0]/h;
+        double sl = x[1]/h;
         double b = Math.sqrt(1-r_[2]*r_[2]);
         e_[0] = -sl;
         e_[1] = cl;

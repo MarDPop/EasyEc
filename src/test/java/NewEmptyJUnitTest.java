@@ -46,30 +46,33 @@ public class NewEmptyJUnitTest {
     // public void hello() {}
     @Test
     public void profileMe() {
+        Random rand = new Random();
         double[] u = new double[]{ 1.2, 4.0 , 6.0};
         double[] v = new double[]{ 5.2, 2.1 , -3.3};
-        float a = 0.55f;
-        float b = 0.73f;
-        float c = -0.98f;
+        float a = 0.04f;
+        float b = 0.53f;
+        float c = -0.1f;
         
         int iterations = 1000000;
         double ans = 0;
         
         long start = System.nanoTime();
         for(int i = 0; i < iterations;i++) {
-            ans = Math.acos(c);
+            ans = Math.acos(b);
+
         }
         long finish = System.nanoTime();
 
-        System.out.println((finish-start)/1e6+" ms run time "+ans);
+        System.out.println("Math.acos() time: "+(finish-start)/1e6+" ms ans = "+ans);
         
         start = System.nanoTime();
         for(int i = 0; i < iterations;i++) {
-            ans = Helper.acos(c);
+            ans = Helper.acos(b);
         }
         finish = System.nanoTime();
 
-        System.out.println((finish-start)/1e6+" ms run time "+ans);
+        System.out.println("Helper.acos() time: "+(finish-start)/1e6+" ms ans = "+ans);
         
+       
     }
 }

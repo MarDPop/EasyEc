@@ -25,7 +25,9 @@ public final class Helper {
     public static final double PI_2 = Math.PI/2;
     public static final double TWOPI = 2*Math.PI;
     public static final double DEG2RAD = 180/Math.PI;
-
+    public static final float PI_2_F = (float) Math.PI/2;
+    public static final float TWOPI_F = (float) Math.PI*2;
+    public static final float PI_F = (float) Math.PI;
     
     private Helper(){}
     
@@ -143,7 +145,7 @@ public final class Helper {
      * @return 
      */
     public static double haversin(double A) {
-        return (1-cos(A))/2;
+        return (1-Math.cos(A))/2;
     }
     
     /**
@@ -159,6 +161,73 @@ public final class Helper {
     // faster implementation 
     public static double acos(double x) {
         return PI_2-asin(x);
+    }
+    
+    // faster implementation
+    public static float sin(float x) {
+        if(x < 0){
+            return -sin(-x);
+        }
+        if(x > PI_2_F) {
+            if(x > PI_F) {
+                if(x > TWOPI_F) {
+                    return sin(x % TWOPI_F);
+                }
+                return -sin(x-PI_F);
+            }
+            return sin(PI_F-x);
+        }
+        float res=x;
+        float x2 = -x*x;
+        x *= x2;
+        res += x/6;
+        if (x2 < -0.01) {
+            x *= x2;
+            res += x/120f;
+            if (x2 < -0.25f) {
+                x *= x2;
+                res += x/5040f;
+                if (x < -0.8f) {
+                    x *= x2;
+                    res += x/362880f;
+                }
+            }
+        }
+        return res;
+    }
+    
+    // faster implementation
+    public static float cos(float x) {
+        x = abs(x);
+        if(x > PI_2_F) {
+            if(x > PI_F) {
+                if(x > TWOPI_F) {
+                    return cos(x % TWOPI_F);
+                }
+                return -cos(x-PI_F);
+            }
+            return -cos(PI_F-x);
+        }
+        float x2 = -x*x; 
+        x = x2;
+        float res=1+x2/2;
+        if (x2 < -0.01f) {
+            x *= x2;
+            res += x/24f;
+            if (x2 < -0.16f) {
+                x *= x2;
+                res += x/720f;
+                if (x2 < -0.5f) {
+                    x *= x2;
+                    res += x/40320f;
+                    if (x2 < -1f) {
+                        x *= x2;
+                        res += x/403200f;
+                    }
+                }     
+            }
+        }
+        return res;
     }
     
     // Absolute error <= 6.7e-5
@@ -252,13 +321,13 @@ public final class Helper {
         double p = sqrt(impact[0]*impact[0]+impact[1]*impact[1]);
         double lambda = atan(impact[2]*Earth.EARTH_EQUATOR_R/(p*Earth.EARTH_POLAR_R));
         lambda *= 3.0f;
-        out[0] = atan((float) ((impact[2]+Earth.e2prime*Earth.EARTH_POLAR_R*sin(lambda))/(p*Earth.e2*Earth.EARTH_EQUATOR_R*cos(lambda))));
+        out[0] = atan((float) ((impact[2]+Earth.e2prime*Earth.EARTH_POLAR_R*Math.sin(lambda))/(p*Earth.e2*Earth.EARTH_EQUATOR_R*Math.cos(lambda))));
         out[1] = atan2(impact[1],impact[0])-impact[3]*Earth.EARTH_ROT;
         return out;
     }
     
     /**
-     * Gets the 
+     * Gets the xy coordinates from impact which contains a time difference
      * @param impact
      * @return 
      */
@@ -268,7 +337,12 @@ public final class Helper {
         return Coordinates.ll2xy(ll);
     }
     
-    public static double[] impactECEF2XY(double[] ecef) {
+    /**
+     * Ecef to xy 
+     * @param ecef
+     * @return 
+     */
+    public static double[] ecef2xy(double[] ecef) {
         double[] geo = Coordinates.ecef2geo(ecef);
         double[] out = new double[2];
         out[0] = geo[1]*Coordinates.lengthDegreeLong(geo[0])*DEG2RAD;
