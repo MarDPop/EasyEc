@@ -6,7 +6,7 @@
 package com.meicompany.pi.realtime.artifacts;
 
 import com.meicompany.pi.coordinates.CoordinateException;
-import com.meicompany.pi.coordinates.Coordinates;
+import com.meicompany.pi.coordinates.CoordinateFrame;
 
 /**
  *
@@ -100,7 +100,7 @@ public class Ship {
      */
     public void move(double dt) {
         double distance = speed*dt;
-        double r = Coordinates.seaLevel(latitude);
+        double r = CoordinateFrame.seaLevel(latitude);
         double maxDistance = 20000;
         int multiple = 1;
         while(distance > maxDistance) {
@@ -108,8 +108,8 @@ public class Ship {
             multiple *=2;
         }
         for(int i = 0; i < multiple; i++){
-            double dlat = distance*Math.sin(latitude)*Coordinates.lengthDegreeLat(latitude);
-            double dlong = distance*Math.cos(latitude)*Coordinates.lengthDegreeLong(latitude);
+            double dlat = distance*Math.sin(latitude)*CoordinateFrame.lengthDegreeLat(latitude);
+            double dlong = distance*Math.cos(latitude)*CoordinateFrame.lengthDegreeLong(latitude);
             this.latitude += dlat/r;
             this.longitude += dlong/r;
         }

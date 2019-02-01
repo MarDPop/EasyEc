@@ -5,7 +5,7 @@
  */
 package com.meicompany.pi.realtime.clustering;
 
-import com.meicompany.pi.coordinates.Coordinates;
+import com.meicompany.pi.coordinates.CoordinateFrame;
 import static com.meicompany.pi.realtime.Helper.TWOPI;
 
 /**
@@ -43,7 +43,7 @@ public class CentroidPi {
     }
     
     public double calcAtLatLong(double latitude, double longitude) {
-        double[] xy = Coordinates.ll2xySpherical(latitude,longitude);
+        double[] xy = CoordinateFrame.ll2xySpherical(latitude,longitude);
         return calcAt(xy[0],xy[1]);
     }
 }

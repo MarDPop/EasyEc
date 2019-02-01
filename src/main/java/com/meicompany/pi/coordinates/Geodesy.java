@@ -9,7 +9,7 @@ package com.meicompany.pi.coordinates;
  *
  * @author mpopescu
  */
-public final class Geodesy extends Coordinates {
+public final class Geodesy extends CoordinateFrame {
     
     public Geodesy(double latitude, double longitude, double height) {
         this.x[0] = latitude;

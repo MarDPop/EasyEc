@@ -5,7 +5,7 @@
  */
 package com.meicompany.pi.realtime.map.util;
 
-import com.meicompany.pi.coordinates.Coordinates;
+import com.meicompany.pi.coordinates.CoordinateFrame;
 
 /**
  *
@@ -23,7 +23,7 @@ public class NodeSphere extends Node{
     
     @Override
     public double distance(double longitude, double latitude) {
-        return Coordinates.earthDistanceSpherical(longitude, latitude, this.x, this.y);
+        return CoordinateFrame.earthDistanceSpherical(longitude, latitude, this.x, this.y);
     }
     
     @Override

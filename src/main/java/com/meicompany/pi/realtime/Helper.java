@@ -5,7 +5,7 @@
  */
 package com.meicompany.pi.realtime;
 
-import com.meicompany.pi.coordinates.Coordinates;
+import com.meicompany.pi.coordinates.CoordinateFrame;
 import com.meicompany.pi.coordinates.Earth;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -332,9 +332,9 @@ public final class Helper {
      * @return 
      */
     public static double[] impact2xy(double[] impact) {
-        double[] ll = Coordinates.ecef2geo(impact);
+        double[] ll = CoordinateFrame.ecef2geo(impact);
         ll[1] -= impact[3]*Earth.EARTH_ROT;
-        return Coordinates.ll2xy(ll);
+        return CoordinateFrame.ll2xy(ll);
     }
     
     /**
@@ -343,10 +343,10 @@ public final class Helper {
      * @return 
      */
     public static double[] ecef2xy(double[] ecef) {
-        double[] geo = Coordinates.ecef2geo(ecef);
+        double[] geo = CoordinateFrame.ecef2geo(ecef);
         double[] out = new double[2];
-        out[0] = geo[1]*Coordinates.lengthDegreeLong(geo[0])*DEG2RAD;
-        out[1] = geo[0]*Coordinates.lengthDegreeLat(geo[0])*DEG2RAD;
+        out[0] = geo[1]*CoordinateFrame.lengthDegreeLong(geo[0])*DEG2RAD;
+        out[1] = geo[0]*CoordinateFrame.lengthDegreeLat(geo[0])*DEG2RAD;
         return out;
     }
     

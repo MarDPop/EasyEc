@@ -11,30 +11,51 @@ import static java.lang.Math.sqrt;
 import static java.lang.Math.tan;
 
 /**
- *
+ * ALL FUNCTIONS ASSUME RADIAN INPUT
  * @author mpopescu
  */
-public abstract class Coordinates {
-    // ALL FUNCTIONS ASSUME RADIAN INPUT 
+public abstract class CoordinateFrame {  
+    /**
+     * Epoch as defined in class, this is important for epoch transformations
+     */
+    protected int epoch; 
     
-    protected int epoch;
-    protected double time;
+    /**
+     * Time in epoch as seconds! Not all epochs define time in seconds 
+     */
+    protected double time; 
+    
+    /**
+     * 3 Dimension array for coordinates (ie. all coordinate frames are 3d)
+     */
     protected final double[] x = new double[3];
     
-    public void setEpoch(int epoch) {
-        this.epoch = epoch;
-    }
-    
+        /**
+     * @return the epoch
+     */
     public int getEpoch() {
         return epoch;
     }
-    
-    public void setTime(double time) {
-        this.time = time;
+
+    /**
+     * @param epoch the epoch to set
+     */
+    public void setEpoch(int epoch) {
+        this.epoch = epoch;
     }
-    
+
+    /**
+     * @return the time
+     */
     public double getTime() {
         return time;
+    }
+
+    /**
+     * @param time the time to set
+     */
+    public void setTime(double time) {
+        this.time = time;
     }
     
     /**
@@ -224,42 +245,59 @@ public abstract class Coordinates {
      * @return 
      */
     public static double[] ecef2geo(double[] ecef) {
-        double g, rg, rf,u, v, m, f, p;
-        double x, y, z, zp;
-        double w2, w, r2,r;
-        double s2, c2, s, c, ss;
+        double g;
+        double rg;
+        double rf;
+        double u;
+        double v;
+        double m;
+        double f;
+        double p;
+        double x;
+        double y;
+        double z;
+        double zp;
+        double w2;
+        double w;
+        double r2;
+        double r;
+        double s2;
+        double c2;
+        double s;
+        double c;
         double[] geo = new double[3]; //Results go here (Lat, Lon, Altitude)
         x = ecef[0];
         y = ecef[1];
         z = ecef[2];
-        zp = Math.abs(z);
-        w2 = x * x + y * y;
+        w2 = x*x + y*y;
         w = Math.sqrt(w2);
-        r2 = w2 + z * z;
+        zp = z*z;
+        r2 = w2 + zp;
         r = Math.sqrt(r2);
         geo[1] = Math.atan2(y, x); //Lon (final)
-        s2 = z * z / r2;
-        c2 = w2 / r2;
-        u = Earth.a2 / r;
-        v = Earth.a3 - Earth.a4 / r;
+        s2 = zp/r2;
+        c2 = w2/r2;
+        u = Earth.a2/r;
+        v = Earth.a3 - Earth.a4/r;
+        zp = Math.abs(z);
         if (c2 > 0.3) {
-            s = (zp / r) * (1.0 + c2 * (Earth.a1 + u + s2 * v) / r);
+            s = (zp/r)*(1.0 + c2*(Earth.a1 + u + s2*v)/r);
             geo[0] = Math.asin(s); //Lat
-            ss = s * s;
-            c = Math.sqrt(1.0 - ss);
+            c2 = s*s;
+            c = Math.sqrt(1.0 - c2);
         } else {
-            c = (w / r) * (1.0 - s2 * (Earth.a5 - u - c2 * v) / r);
+            c = (w/r) * (1.0 - s2*(Earth.a5 - u - c2*v)/r);
             geo[0] = Math.acos(c); //Lat
-            ss = 1.0 - c * c;
-            s = Math.sqrt(ss);
+            c2 = 1.0 - c*c;
+            s = Math.sqrt(c2);
         }
-        g = 1.0 - Earth.e2 * ss;
-        rg = Earth.EARTH_EQUATOR_R / Math.sqrt(g);
+        g = 1.0 - Earth.e2*c2;
+        rg = Earth.EARTH_EQUATOR_R/Math.sqrt(g);
         rf = Earth.a6 * rg;
-        u = w - rg * c;
-        v = zp - rf * s;
-        f = c * u + s * v;
-        m = c * v - s * u;
+        u = w - rg*c;
+        v = zp - rf*s;
+        f = c*u + s*v;
+        m = c*v - s*u;
         p = m / (rf / g + f);
         geo[0] += p; //Lat
         geo[2] = f + m * p / 2.0; //Altitude
@@ -295,6 +333,8 @@ public abstract class Coordinates {
     public static double primeVerticalRadiusCurvature(double phi){
         return Earth.EARTH_EQUATOR_R/Math.sqrt(1-Earth.e2*Math.sin(phi)*Math.sin(phi));
     }
+
+
     
     
 }

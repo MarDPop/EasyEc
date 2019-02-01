@@ -5,7 +5,7 @@
  */
 package com.meicompany.pi.realtime.map.util;
 
-import com.meicompany.pi.coordinates.Coordinates;
+import com.meicompany.pi.coordinates.CoordinateFrame;
 import com.meicompany.pi.realtime.Helper;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -125,7 +125,7 @@ public class NodeMap {
         points.forEach((point) -> {
             JSONObject p = new JSONObject();
             if(convert){
-                double[] c = Coordinates.xy2ll(point);
+                double[] c = CoordinateFrame.xy2ll(point);
                 p.put("latitude",c[0]);
                 p.put("longitude",c[1]);
             } else {

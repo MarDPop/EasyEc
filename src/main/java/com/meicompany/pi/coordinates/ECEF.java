@@ -9,7 +9,7 @@ package com.meicompany.pi.coordinates;
  *
  * @author mpopescu
  */
-public final class ECEF extends Coordinates {
+public final class ECEF extends CoordinateFrame {
     
     private double[] spherical;
     

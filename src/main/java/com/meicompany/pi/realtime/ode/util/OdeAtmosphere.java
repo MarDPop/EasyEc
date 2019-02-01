@@ -5,7 +5,7 @@
  */
 package com.meicompany.pi.realtime.ode.util;
 
-import com.meicompany.pi.coordinates.Coordinates;
+import com.meicompany.pi.coordinates.CoordinateFrame;
 import com.meicompany.pi.realtime.Helper;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -99,11 +99,16 @@ public class OdeAtmosphere {
         }
     }
     
+    /**
+     * Get the geopotential altitude
+     * @param r
+     * @return 
+     */
     public static double geometricAlt(double[] r) {
-        double R = Helper.norm(r);
-        double lat = Math.asin(r[2]/R);
-        double seaLevel = Coordinates.seaLevel(lat);
-        return (R-seaLevel)*seaLevel/R;
+        double radius = Helper.norm(r);
+        double lat = Math.asin(r[2]/radius);
+        double seaLevel = CoordinateFrame.seaLevel(lat);
+        return (radius-seaLevel)*seaLevel/radius;
     }
     
 }

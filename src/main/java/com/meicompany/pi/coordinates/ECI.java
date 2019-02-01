@@ -9,7 +9,7 @@ package com.meicompany.pi.coordinates;
  *
  * @author mpopescu
  */
-public final class ECI extends Coordinates {
+public final class ECI extends CoordinateFrame {
     
     public ECI(double[] cartesian) {
         set(cartesian);

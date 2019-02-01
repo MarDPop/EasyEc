@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.meicompany.pi.realtime.ode;
 
 /**
@@ -18,6 +13,8 @@ public class ODEOptions {
     private double relativeTolerance;
     private double tolerance;
     
+    private double maxTimestep;
+    private double minTimestep;
     
     public ODEOptions(double startTime, double endTime) {
         this.startTime = startTime;
@@ -66,6 +63,32 @@ public class ODEOptions {
         this.tolerance = tolerance;
     }
     
+    /**
+     * @return the maxTimestep
+     */
+    public double getMaxTimestep() {
+        return maxTimestep;
+    }
+
+    /**
+     * @param maxTimestep the absoluteTolerance to set
+     */
+    public void setMaxTimestep(double maxTimestep) {
+        this.maxTimestep = maxTimestep;
+    }
     
+    /**
+     * @return the minTimestep
+     */
+    public double getMinTimestep() {
+        return minTimestep;
+    }
+
+    /**
+     * @param minTimestep the minTimestep to set
+     */
+    public void setMinTimestep(double minTimestep) {
+        this.minTimestep = minTimestep;
+    }
     
 }
