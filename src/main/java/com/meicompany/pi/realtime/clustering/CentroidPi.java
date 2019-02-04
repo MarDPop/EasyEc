@@ -39,7 +39,12 @@ public class CentroidPi {
     public double calcAt(double x, double y) {
         double dx = x-x_Center;
         double dy = y-y_Center;
-        return number*Math.exp(-(dx*dx/sigma_x+dy*(dy/sigma_y-2*p*dx/ss))/(2*alpha*alpha))/(TWOPI*alpha*ss);
+        if(number > 3) {
+            return number*Math.exp(-(dx*dx/sigma_x+dy*(dy/sigma_y-2*p*dx/ss))/(2*alpha*alpha))/(TWOPI*alpha*ss);
+        } else {
+            double tmp = 2*(sigma_y+sigma_x);
+            return number*Math.exp(-(dx*dx+dy*dy)/tmp)/Math.sqrt(Math.PI*tmp);
+        }
     }
     
     public double calcAtLatLong(double latitude, double longitude) {
