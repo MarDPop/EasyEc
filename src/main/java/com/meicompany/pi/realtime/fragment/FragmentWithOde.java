@@ -85,7 +85,7 @@ public final class FragmentWithOde {
         this.soundSpeed = atm.speedSound;
         this.winds = atm.winds;
         // Time Defaults
-        this.dt = 2;
+        this.dt = 0.01;
         this.maxTimestep = 10;
         this.minTimestep = BC*1e-6;
         this.tol = 3e-4;

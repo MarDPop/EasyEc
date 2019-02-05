@@ -113,10 +113,29 @@ public abstract class CoordinateFrame {
      * @param xy
      * @return 
      */
+    public static double[] xy2llFast(double[] xy) {
+        double[] out = new double[2];
+        out[1] = xy[1] / 6371000;
+        out[0] = xy[0] / (6383485.515566318 * cos(out[1]) - 5357.155384473197 * cos(3 * out[1]) + 6.760901982543714 * cos(5 * out[1]));
+        return out;
+    }
+    
+    /**
+     * Converts the xy coordinates to latitude and longitude
+     * @param xy
+     * @return 
+     */
     public static double[] xy2ll(double[] xy) {
         double[] out = new double[2];
-        out[0] = xy[1] / 6371000;
-        out[1] = xy[0] / (6383485.515566318 * cos(out[0]) - 5357.155384473197 * cos(3 * out[0]) + 6.760901982543714 * cos(5 * out[0]));
+        double lat = xy[1] / 6371000;
+        for(int i = 0; i < 10; i++) {
+            double oldLat = lat;
+            lat = (xy[1] + 16037.66164350688 * sin(2 * oldLat) - 16.830635231967932 * sin(4 * oldLat) + 0.021963382146682 * sin(6 * oldLat))/6367447.280965017 ; 
+            if (Math.abs((oldLat-lat)/lat)< 1e-6){
+                break;
+            }
+        }
+        out[0] = xy[0] / (6383485.515566318 * cos(lat) - 5357.155384473197 * cos(3 * lat) + 6.760901982543714 * cos(5 * lat)); //longitude
         return out;
     }
     
@@ -150,9 +169,8 @@ public abstract class CoordinateFrame {
      */
     public static double[] ll2xySpherical(double longitude, double latitude) {
         double[] out = new double[2];
-        double R = seaLevel(latitude);
-        out[1] = R * longitude;
-        out[0] = R * cos(latitude) * longitude;
+        out[0] = Earth.EARTH_AVG_R * cos(latitude) * longitude;
+        out[1] = Earth.EARTH_AVG_R * latitude;
         return out;
     }
     
@@ -163,8 +181,8 @@ public abstract class CoordinateFrame {
      */
     public static double[] ll2xy(double[] ll) {
         double[] out = new double[2];
-        out[0] = (6383485.515566318 * cos(ll[0]) - 5357.155384473197 * cos(3 * ll[0]) + 6.760901982543714 * cos(5 * ll[0])) * ll[1];
-        out[1] = (6367447.280965017 * ll[0] - 16037.66164350688 * sin(2 * ll[0]) + 16.830635231967932 * sin(4 * ll[0]) - 0.021963382146682 * sin(6 * ll[0]));
+        out[0] = (6383485.515566318 * cos(ll[1]) - 5357.155384473197 * cos(3 * ll[1]) + 6.760901982543714 * cos(5 * ll[1])) * ll[0];
+        out[1] = (6367447.280965017 * ll[1] - 16037.66164350688 * sin(2 * ll[1]) + 16.830635231967932 * sin(4 * ll[1]) - 0.021963382146682 * sin(6 * ll[1]));
         return out;
     }
 
@@ -274,7 +292,7 @@ public abstract class CoordinateFrame {
         zp = z*z;
         r2 = w2 + zp;
         r = Math.sqrt(r2);
-        geo[1] = Math.atan2(y, x); //Lon (final)
+        geo[0] = Math.atan2(y, x); //Lon (final)
         s2 = zp/r2;
         c2 = w2/r2;
         u = Earth.a2/r;
@@ -282,12 +300,12 @@ public abstract class CoordinateFrame {
         zp = Math.abs(z);
         if (c2 > 0.3) {
             s = (zp/r)*(1.0 + c2*(Earth.a1 + u + s2*v)/r);
-            geo[0] = Math.asin(s); //Lat
+            geo[1] = Math.asin(s); //Lat
             c2 = s*s;
             c = Math.sqrt(1.0 - c2);
         } else {
             c = (w/r) * (1.0 - s2*(Earth.a5 - u - c2*v)/r);
-            geo[0] = Math.acos(c); //Lat
+            geo[1] = Math.acos(c); //Lat
             c2 = 1.0 - c*c;
             s = Math.sqrt(c2);
         }
@@ -299,12 +317,12 @@ public abstract class CoordinateFrame {
         f = c*u + s*v;
         m = c*v - s*u;
         p = m / (rf / g + f);
-        geo[0] += p; //Lat
+        geo[1] += p; //Lat
         geo[2] = f + m * p / 2.0; //Altitude
         if (z < 0.0) {
-            geo[0] *= -1.0; //Lat
+            geo[1] *= -1.0; //Lat
         }
-        return geo; //Return Lat, Lon, Altitude in that order
+        return geo; //Return Lon, Lat, Altitude in that order
     }
 
     /**

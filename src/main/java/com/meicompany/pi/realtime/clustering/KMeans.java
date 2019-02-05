@@ -18,12 +18,10 @@ public class KMeans {
     
     public static double[][] cluster(double[][] data, double[][] initial, double tol) {
         int nTotal = initial.length;
-        //Helper.printCsv(data,"data.csv");
         double[][] centroids = new double[nTotal][9];
         for(int i = 0; i < nTotal; i++){
             System.arraycopy(initial[i], 0, centroids[i], 0, 2); 
         }
-        //Helper.printCsv(initial,"initial.csv");
         for(int iter = 0; iter < 200; iter++) {
             for(double[] centroid : centroids) {
                 for(int j = 2; j < 9;j++) {
@@ -32,8 +30,8 @@ public class KMeans {
             }
             // Collect points to centroid
             for(double[] point : data) {
-                int i_found  = 0;
-                double d_min = 1e100;
+                int foundIndex  = 0;
+                double minimumDistance = 1e100;
                 double dx2 = 0;
                 double dy2 = 0;
                 double dxy = 0;
@@ -45,21 +43,21 @@ public class KMeans {
                     dx *= dx;
                     dy *= dy;
                     double d = dx + dy;
-                    if (d < d_min) {
-                        i_found = i;
-                        d_min = d;
+                    if (d < minimumDistance) {
+                        foundIndex = i;
+                        minimumDistance = d;
                         dx2 = dx;
                         dy2 = dy;
                         dxy = tmp;
                     }
                 }
-                centroids[i_found][2] += point[0]; 
-                centroids[i_found][3] += point[1]; 
-                centroids[i_found][4] += 1;
-                centroids[i_found][5] += d_min;
-                centroids[i_found][6] += dx2;
-                centroids[i_found][7] += dy2;
-                centroids[i_found][8] += dxy;
+                centroids[foundIndex][2] += point[0]; 
+                centroids[foundIndex][3] += point[1]; 
+                centroids[foundIndex][4] += 1;
+                centroids[foundIndex][5] += minimumDistance;
+                centroids[foundIndex][6] += dx2;
+                centroids[foundIndex][7] += dy2;
+                centroids[foundIndex][8] += dxy;
             }
             // Move and evaluate stop 
             double err = 0;
@@ -79,11 +77,45 @@ public class KMeans {
         }
         // Clean up bad data
         ArrayList<double[]> temp = new ArrayList<>();
-        // Remove centroids with no data
+        
         for(double[] centroid : centroids) {
+            // Remove centroids with no data
             if(centroid[4] > 0) {
-                temp.add(centroid);
+                // Absorb centroids with little data
+                if (centroid[4] < 4) {
+                    double d_min = 1e100;
+                    double[] cFound = null;
+                    double dxFound = 0;
+                    double dyFound = 0;
+                    for(double[] c2 : centroids) {
+                        if(c2 != centroid && c2[4] > 0) {
+                            double dx = c2[0]-centroid[0];
+                            double dy = c2[1]-centroid[1];
+                            double d = dx*dx + dy*dy;
+                            if (d < d_min) {
+                                d_min = d;
+                                cFound = c2;
+                                dxFound = dx;
+                                dyFound = dy;
+                            }
+                        }
+                    }
+                    if (cFound == null) {
+                        System.out.println(d_min);
+                    }
+                    cFound[5] += d_min*centroid[4];
+                    d_min = cFound[4]+centroid[4];
+                    cFound[0] = (cFound[0]*cFound[4] + centroid[0]*centroid[4])/d_min;
+                    cFound[1] = (cFound[1]*cFound[4] + centroid[1]*centroid[4])/d_min;
+                    cFound[4] = d_min;
+                    cFound[6] += dxFound*dxFound*centroid[4];
+                    cFound[7] += dyFound*dyFound*centroid[4];
+                    cFound[8] += dyFound*dxFound*centroid[4];
+                } else {
+                    temp.add(centroid);
+                }
             }
+            
         }
         // Add closest centroid to data without changing number
         for(double[] c1 : temp) {
@@ -122,7 +154,6 @@ public class KMeans {
         for(double[] centroid : temp) {
             System.arraycopy(centroid, 0, centroids[nTotal++], 0, 9);
         }
-        //Helper.printCsv(centroids,"centroids.csv");
         return centroids;
     }
     

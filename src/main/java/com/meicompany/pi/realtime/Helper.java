@@ -315,7 +315,7 @@ public final class Helper {
      * @param impact
      * @return 
      */
-    public static double[] impactLatLong(double[] impact) {
+    public static double[] impactLongLat(double[] impact) {
         //http://www.oc.nps.edu/oc2902w/coord/coordcvt.pdf
         double[] out = new double[2];
         double p = sqrt(impact[0]*impact[0]+impact[1]*impact[1]);
@@ -333,7 +333,7 @@ public final class Helper {
      */
     public static double[] impact2xy(double[] impact) {
         double[] ll = CoordinateFrame.ecef2geo(impact);
-        ll[1] -= impact[3]*Earth.EARTH_ROT;
+        ll[0] -= impact[3]*Earth.EARTH_ROT;
         return CoordinateFrame.ll2xy(ll);
     }
     
@@ -345,8 +345,8 @@ public final class Helper {
     public static double[] ecef2xy(double[] ecef) {
         double[] geo = CoordinateFrame.ecef2geo(ecef);
         double[] out = new double[2];
-        out[0] = geo[1]*CoordinateFrame.lengthDegreeLong(geo[0])*DEG2RAD;
-        out[1] = geo[0]*CoordinateFrame.lengthDegreeLat(geo[0])*DEG2RAD;
+        out[0] = geo[0]*CoordinateFrame.lengthDegreeLong(geo[1])*DEG2RAD;
+        out[1] = geo[1]*CoordinateFrame.lengthDegreeLat(geo[1])*DEG2RAD;
         return out;
     }
     
