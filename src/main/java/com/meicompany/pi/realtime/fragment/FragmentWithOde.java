@@ -41,6 +41,7 @@ public final class FragmentWithOde {
     // Time
     private double dt;
     private double time;
+    private double initialTime;
     
     // Options
     private double tol;
@@ -134,6 +135,7 @@ public final class FragmentWithOde {
     
     public void run(double[] x0, double[] v0, double[] a0, double time) {
         this.time = time;
+        this.initialTime = time;
         System.arraycopy(x0, 0, this.x, 0, 3);
         System.arraycopy(v0, 0, this.v, 0, 3);
         System.arraycopy(a0, 0, this.a, 0, 3);
