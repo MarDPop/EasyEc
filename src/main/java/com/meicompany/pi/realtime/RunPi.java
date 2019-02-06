@@ -5,6 +5,7 @@
  */
 package com.meicompany.pi.realtime;
 
+import com.meicompany.pi.coordinates.Earth;
 import com.meicompany.pi.realtime.map.util.NodeMap;
 import com.meicompany.pi.trajectory.Trajectory;
 import java.io.FileWriter;
@@ -57,6 +58,10 @@ public class RunPi {
         PiCalc pi = new PiCalc(state[0],state[1],1);
         while(time < 5){
             state = traj.getState(time);
+            if(traj.coordinateFrame == 1) {
+                    state[1][1] += Earth.EARTH_ROT*state[0][0];
+                    state[1][0] -= Earth.EARTH_ROT*state[0][1];
+            }
             pi.setState(state[0],state[1], time);
             pi.run(12);
             pi.collectRun();

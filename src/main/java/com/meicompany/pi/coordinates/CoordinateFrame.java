@@ -135,6 +135,7 @@ public abstract class CoordinateFrame {
                 break;
             }
         }
+        out[1] = lat;
         out[0] = xy[0] / (6383485.515566318 * cos(lat) - 5357.155384473197 * cos(3 * lat) + 6.760901982543714 * cos(5 * lat)); //longitude
         return out;
     }
