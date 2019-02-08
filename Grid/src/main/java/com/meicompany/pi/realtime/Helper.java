@@ -138,8 +138,8 @@ public final class Helper {
      * @param v
      * @return 
      */
-    public static double angleQuick(double[] u, double[] v) {
-        return acos(dot(u,v)/Math.sqrt(dot(u,u)*dot(v,v)));
+    public static float angleQuick(double[] u, double[] v) {
+        return acos((float)(dot(u,v)/Math.sqrt(dot(u,u)*dot(v,v))));
     }
     
     /**
@@ -164,8 +164,8 @@ public final class Helper {
     
     /* TRIGNOMETRIC FUNCTIONS */
     // faster implementation 
-    public static double acos(double x) {
-        return PI_2-asin(x);
+    public static float acos(float x) {
+        return PI_2_F-asin(x);
     }
     
     // faster implementation
@@ -236,8 +236,8 @@ public final class Helper {
     }
     
     // Absolute error <= 6.7e-5
-    public static double asin(double x) {
-        double negate = 1;
+    public static float asin(float x) {
+        float negate = 1;
         if (x < 0) { 
             negate = -1;
         }
@@ -334,10 +334,12 @@ public final class Helper {
         try (FileWriter fw = new FileWriter(file); PrintWriter out = new PrintWriter(fw)) {
             // ',' divides the word into columns
             for (CentroidPi[] data2: data) {
+                
                 for (CentroidPi data1 : data2) {
-                    out.print(data1.x_Center);
+                    double[] ll = CoordinateFrame.xy2ll(new double[]{data1.x_Center,data1.y_Center});
+                    out.print(ll[0]);
                     out.print(",");
-                    out.print(data1.y_Center);
+                    out.print(ll[1]);
                     out.print(",");
                     out.print(data1.number);
                     out.print(",");
@@ -383,7 +385,8 @@ public final class Helper {
      */
     public static void printCsv2(List<double[]> runs, String file){
         try (FileWriter fw = new FileWriter(file); PrintWriter out = new PrintWriter(fw)) {
-            for (double[] data1 : runs) {
+            for (int i = 0; i < runs.size(); i+=10) {
+                double[] data1 = runs.get(i);
                 for (double data2 : data1) {
                     out.print(data2);
                     out.print(",");
@@ -393,6 +396,17 @@ public final class Helper {
             out.flush();
         } catch (IOException ex) {
             Logger.getLogger(Helper.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    /**
+     * prints array to csv
+     * @param frags
+     */
+    public static void printFrags(ArrayList<ArrayList<double[]>> frags){
+        int count = 1;
+        for(ArrayList<double[]> frag : frags) {
+            printCsv2(frag,"frag"+count++);
         }
     }
     

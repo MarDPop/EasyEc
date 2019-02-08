@@ -75,10 +75,12 @@ public class NodeMap {
         try (FileWriter fw = new FileWriter("World.csv"); PrintWriter out = new PrintWriter(fw)) {
             List<double[]> points = nodeGrid();
             for (double[] point : points) {
-                for (double d : point) {
-                    out.print(d);
-                    out.print(",");
-                }
+                double[] ll = CoordinateFrame.xy2ll(point);
+                out.print(ll[0]);
+                out.print(",");
+                out.print(ll[1]);
+                out.print(",");
+                out.print(point[2]);
                 out.println();
             }
             out.flush();

@@ -63,7 +63,7 @@ public class NewEmptyJUnitTest {
         
         long start = System.nanoTime();
         for(int i = 0; i < iterations;i++) {
-            double[] x = Helper.add(v, u);
+            double x = Math.atan2(u[0],u[1]);
         }
         long finish = System.nanoTime();
 
@@ -71,7 +71,7 @@ public class NewEmptyJUnitTest {
         
         start = System.nanoTime();
         for(int i = 0; i < iterations;i++) {
-            u2.add(v2);
+            double x = Math.sqrt(u[0]*u[0] + u[1]*u[1]);
         }
         finish = System.nanoTime();
 

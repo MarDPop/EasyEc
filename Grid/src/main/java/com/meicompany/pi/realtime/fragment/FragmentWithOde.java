@@ -6,6 +6,7 @@
 package com.meicompany.pi.realtime.fragment;
 
 import com.meicompany.pi.coordinates.Earth;
+import com.meicompany.pi.realtime.Helper;
 import com.meicompany.pi.realtime.ode.util.OdeAtmosphere;
 import static java.lang.Math.atan2;
 import static java.lang.Math.cos;
@@ -13,6 +14,7 @@ import static java.lang.Math.exp;
 import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
 import static java.lang.Math.tan;
+import java.util.ArrayList;
 import java.util.Random;
 
 /**
@@ -30,7 +32,7 @@ public final class FragmentWithOde {
     private static final double[] bc2mach = new double[]{1.0000000,0.971428592,0.886956541,0.85955058,0.711627922,0.528497421,0.488038288,0.525773207,0.512562825,0.506622527};
     private static final double[] dBdM = new double[] {-0.14285704,-0.281573503,-0.27405961,-1.47922658,-0.457826253,-0.067431888,0.01886746,-0.013210382,-0.00118806};
 
-    private static final double[] sigma_l2d = new double[] {0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.8};
+    private static final double[] l2d = new double[] {0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.08};
     
     // Initial
     private final double[] x = new double[3];
@@ -73,6 +75,8 @@ public final class FragmentWithOde {
     final double[] eastVector = new double[3];
     final double[] northVector = new double[3];
     
+    public final ArrayList<double[]> recording = new ArrayList<>();
+    
     public FragmentWithOde(double ballisticCoefficient, double explosionVelocity, double lift2drag, OdeAtmosphere atm) {
         this(atm);
         this.ballisticCoefficient = ballisticCoefficient;
@@ -87,8 +91,8 @@ public final class FragmentWithOde {
         this.soundSpeed = atm.speedSound;
         this.winds = atm.winds;
         // Time Defaults
-        this.dt = 0.001;
-        this.maxTimestep = 8;
+        this.dt = 0.00001;
+        this.maxTimestep = 6;
         this.minTimestep = ballisticCoefficient*1e-6;
         this.tol = 1e-4;
         // Atm defaults
@@ -130,7 +134,7 @@ public final class FragmentWithOde {
     
     public void generatePseudo() {
         this.ballisticCoefficient = Math.pow(10,rand.nextFloat()*3)+2;
-        this.lift2drag = sigma_l2d[rand.nextInt(6)];
+        this.lift2drag = l2d[rand.nextInt(6)];
         this.explosionVelocity = Math.pow(15,rand.nextFloat()*2);
     }
     
@@ -141,6 +145,41 @@ public final class FragmentWithOde {
         System.arraycopy(v0, 0, this.v, 0, 3);
         System.arraycopy(a0, 0, this.a, 0, 3);
         
+        // Explosion
+        float angle1 = rand.nextFloat()*6.28318530718f;
+        float angle2 = rand.nextFloat()*6.28318530718f;
+        
+        // Add explosion to velocity
+        double dv = explosionVelocity*Helper.cos(angle1);
+        v[1] += dv*sin(angle2);
+        v[2] += dv*tan(angle1);
+        v[0] += dv*cos(angle2);
+        
+        for(int iter = 0; iter < 120000; iter++) {
+            System.arraycopy(a, 0, aprev, 0, 3);
+            System.arraycopy(x, 0, xold, 0, 3);
+            calcA();
+            stepSize();
+            for (int i = 0; i < 3; i++) {
+                x[i] += dt*(v[i]+ (dt/6)*(4*a[i]-aprev[i]));
+                v[i] += (dt/2)*(3*a[i] - aprev[i]);
+            }
+            if (h < 0) {
+                groundImpact();
+                break;
+            } 
+            this.time += dt;
+        }
+    }
+    
+    public void runRecord(double[] x0, double[] v0, double[] a0, double time) {
+        this.time = time;
+        this.initialTime = time;
+        System.arraycopy(x0, 0, this.x, 0, 3);
+        System.arraycopy(v0, 0, this.v, 0, 3);
+        System.arraycopy(a0, 0, this.a, 0, 3);
+        
+        ArrayList<double[]> out = new ArrayList<>();
         // Explosion
         double angle1 = rand.nextFloat()*TWOPI;
         double angle2 = rand.nextFloat()*TWOPI;
@@ -165,35 +204,37 @@ public final class FragmentWithOde {
                 break;
             } 
             this.time += dt;
+            recording.add(new double[]{x[0],x[1],x[2],this.time});
         }
+        
     }
     
-    
     private void calcA() {
-        double R2 = x[0]*x[0]+x[1]*x[1]+x[2]*x[2];
+        h = x[0]*x[0]+x[1]*x[1];
+        double R2 = h+x[2]*x[2];
+        h = Math.sqrt(h);
         radius = sqrt(R2);
 
         // Get unit vectors
         radialVector[0] = x[0]/radius;
         radialVector[1] = x[1]/radius;
         radialVector[2] = x[2]/radius;
-        h = atan2(x[1],x[0]);
-        double cl = cos(h);
-        double sl = sin(h);
-        double b = Math.sqrt(1-radialVector[2]*radialVector[2]);
+        
+        double cl = x[0]/h;
+        double sl = x[1]/h;
+        double c = Math.sqrt(1-radialVector[2]*radialVector[2]);
         eastVector[0] = -sl;
         eastVector[1] = cl;
-        northVector[0] = radialVector[2]*cl;
-        northVector[1] = radialVector[2]*sl;
-        northVector[2] = b;
+        northVector[0] = -radialVector[2]*cl;
+        northVector[1] = -radialVector[2]*sl;
+        northVector[2] = c;
         
         // Calculate Geopot Height
-        b /= 6378137;
+        c /= 6378137;
         h = radialVector[2]/6356752.3;
-        h = 1/sqrt(b*b+h*h);
+        h = 1/sqrt(c*c+h*h);
         
         h = (radius-h)*h/radius;
-        
         // Atmospheric density and wind        
         if (h > 1.2e5) {
             // rho is less than 1e-6
@@ -208,26 +249,26 @@ public final class FragmentWithOde {
                 wind[0] = 10*eastVector[0]+19*northVector[0];
                 wind[1] = 10*eastVector[1]+19*northVector[1];
                 wind[2] = 10*eastVector[2]+19*northVector[2];
-                b = speedSound_high;
+                c = speedSound_high;
             } else {
                 if (h < 1.022401e3) {
                     rho = 0.63*exp(-h*0.034167247386760/temp_low);
                     wind[0] = 1.5*eastVector[0]+2*northVector[0];
                     wind[1] = 1.5*eastVector[1]+2*northVector[1];
                     wind[2] = 1.5*eastVector[2]+2*northVector[2];
-                    b = speedSound_low;
+                    c = speedSound_low;
                 } else {
                     h /= 340.8;
                     int i = (int) h;
                     double delta = h - i;
                     i-=2;
                     rho = densities[i]+delta*(densities[i+1]-densities[i]);
-                    b = winds[i][0];
-                    h = winds[i][1];
-                    wind[0] = b*eastVector[0]+h*northVector[0];
-                    wind[1] = b*eastVector[1]+h*northVector[1];
-                    wind[2] = b*eastVector[2]+h*northVector[2];
-                    b = soundSpeed[i];
+                    sl = winds[i][0];
+                    cl = winds[i][1];
+                    wind[0] = sl*eastVector[0]+cl*northVector[0];
+                    wind[1] = sl*eastVector[1]+cl*northVector[1];
+                    wind[2] = sl*eastVector[2]+cl*northVector[2];
+                    c = soundSpeed[i];
                 }
             }
         }
@@ -238,11 +279,9 @@ public final class FragmentWithOde {
         freestreamVelocity[2] = -v[2] + wind[2];
         
         airspeed = norm(freestreamVelocity);
-        double mach = airspeed/b;
         
-        double drag = rho*airspeed/bc(mach);
-        double lift = drag*lift2drag*airspeed;
-        lift -= EARTH_MU/R2;
+        double drag = rho*airspeed/bc(airspeed/c);
+        double lift = drag*lift2drag*airspeed - EARTH_MU/R2;
         a[0] = drag*freestreamVelocity[0]+lift*radialVector[0];
         a[1] = drag*freestreamVelocity[1]+lift*radialVector[1];
         a[2] = drag*freestreamVelocity[2]+lift*radialVector[2];
@@ -267,10 +306,6 @@ public final class FragmentWithOde {
         x[0] = xold[0] + delta*x[0];
         x[1] = xold[1] + delta*x[1];
         x[2] = xold[2] + delta*x[2];
-    }
-    
-    public double[] getX() {
-        return x;
     }
     
     public double[] impact() {

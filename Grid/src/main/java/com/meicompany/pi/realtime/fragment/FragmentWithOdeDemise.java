@@ -1,5 +1,6 @@
 package com.meicompany.pi.realtime.fragment;
 
+import com.meicompany.pi.coordinates.Earth;
 import com.meicompany.pi.realtime.ode.ODEOptions;
 import com.meicompany.pi.realtime.ode.util.Material;
 import com.meicompany.pi.realtime.ode.util.OdeAtmosphere;
@@ -233,17 +234,17 @@ public final class FragmentWithOdeDemise {
         h = Math.sqrt(h); 
         double cl = x[0]/h;
         double sl = x[1]/h;
-        double b = Math.sqrt(1-radialVector[2]*radialVector[2]);
+        double c = Math.sqrt(1-radialVector[2]*radialVector[2]);
         eastVector[0] = -sl;
         eastVector[1] = cl;
-        northVector[0] = radialVector[2]*cl;
-        northVector[1] = radialVector[2]*sl;
-        northVector[2] = b;
+        northVector[0] = -radialVector[2]*cl;
+        northVector[1] = -radialVector[2]*sl;
+        northVector[2] = c;
         
         // Calculate Geopot Height
-        b /= 6378137;
+        c /= 6378137;
         h = radialVector[2]/6356752.3;
-        h = 1/sqrt(b*b+h*h);
+        h = 1/sqrt(c*c+h*h);
         
         h = (radius-h)*h/radius;
         
@@ -261,40 +262,39 @@ public final class FragmentWithOdeDemise {
                 wind[0] = 10*eastVector[0]+19*northVector[0];
                 wind[1] = 10*eastVector[1]+19*northVector[1];
                 wind[2] = 10*eastVector[2]+19*northVector[2];
-                b = speedSound_high;
+                c = speedSound_high;
             } else {
                 if (h < 1.022401e3) {
                     rho = 0.63*exp(-h*0.034167247386760/temp_low);
                     wind[0] = 1.5*eastVector[0]+2*northVector[0];
                     wind[1] = 1.5*eastVector[1]+2*northVector[1];
                     wind[2] = 1.5*eastVector[2]+2*northVector[2];
-                    b = speedSound_low;
+                    c = speedSound_low;
                 } else {
                     h /= 340.8;
                     int i = (int) h;
                     double delta = h - i;
                     i-=2;
                     rho = densities[i]+delta*(densities[i+1]-densities[i]);
-                    b = winds[i][0];
-                    h = winds[i][1];
-                    wind[0] = b*eastVector[0]+h*northVector[0];
-                    wind[1] = b*eastVector[1]+h*northVector[1];
-                    wind[2] = b*eastVector[2]+h*northVector[2];
-                    b = soundSpeed[i];
+                    sl = winds[i][0];
+                    cl = winds[i][1];
+                    wind[0] = sl*eastVector[0]+cl*northVector[0];
+                    wind[1] = sl*eastVector[1]+cl*northVector[1];
+                    wind[2] = sl*eastVector[2]+cl*northVector[2];
+                    c = soundSpeed[i];
                 }
             }
         }
 
         double[] freestreamVelocity = new double[3];
-        freestreamVelocity[0] = -v[0] - x[1]*7.29211505392569e-05 + wind[0];
-        freestreamVelocity[1] = -v[1] + x[0]*7.29211505392569e-05 + wind[1];
+        freestreamVelocity[0] = -v[0] - x[1]*Earth.EARTH_ROT + wind[0];
+        freestreamVelocity[1] = -v[1] + x[0]*Earth.EARTH_ROT + wind[1];
         freestreamVelocity[2] = -v[2] + wind[2];
         
         airspeed = norm(freestreamVelocity);
-        double mach = airspeed/b;
         
         demise();
-        double drag = rho*airspeed/bc(mach);
+        double drag = rho*airspeed/bc(airspeed/c);
         double lift = drag*lift2drag*airspeed;
         lift -= EARTH_MU/R2;
         a[0] = drag*freestreamVelocity[0]+lift*radialVector[0];

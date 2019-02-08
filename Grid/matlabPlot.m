@@ -17,15 +17,9 @@ lat = lat.*180/pi;
 long = long.*180/pi;
 value = M(:,3);
 
-% [xq,yq] = meshgrid(linspace(-180,max(long),1000),linspace(min(lat),max(lat),1000));
-[xq,yq] = meshgrid(linspace(-135,-75,751),linspace(-15,35,751));
+[xq,yq] = meshgrid(linspace(-135,-65,751),linspace(-15,35,751));
 z3 = griddata(long,lat,value,xq,yq,'natural');
 
-% M = csvread('initial.csv');
-% long = M(:,1);
-% lat = M(:,2);
-% sz = M(:,3);
-% sz2 = (M(:,4)+M(:,5))./1e8;
 
 figure
 hold on
@@ -44,10 +38,6 @@ M = csvread('traj.csv');
 long = M(:,1).*180/pi;
 lat = M(:,2).*180/pi;
 plot(long,lat,'k');
-% plot([long(2) long(1)], [lat(2) lat(1)],'r');
-% plot([long(1) long(3)], [lat(1) lat(3)],'r');
-% plot([long(3) long(4)], [lat(3) lat(4)],'r');
-% plot([long(4) long(2)], [lat(4) lat(2)],'r');
 
 M = csvread('centroids.csv');
 [m, n] = size(M);
@@ -63,23 +53,10 @@ long = long.*180/pi;
 sz = M(:,3);
 scatter(long,lat,sz,'b');
 
-% scatter(long,lat);
-% scatter(long,lat,sz);
-% scatter(long,lat,sz2,'r');
+
 figure
 hold on
-% Impacts = csvread('data.csv');
-% [m, n] = size(Impacts);
-% longImpacts = zeros(m,1);
-% latImpacts = Impacts(:,2)./6371000;
-% for i = 1:m
-%     c = cos(latImpacts(i));
-%     sl = 1/sqrt((c/6378137)^2+(sin(latImpacts(i))/6356752.3)^2);
-%     longImpacts(i) = Impacts(i,1)/(c*sl);
-% end
-% latImpacts = latImpacts.*180/pi;
-% longImpacts = longImpacts.*180/pi;
-% scatter(longImpacts,latImpacts,'y');
+
 
 M = csvread('centroids.csv');
 [m, n] = size(M);
@@ -110,5 +87,3 @@ plot(long,lat,'k');
 % [c,t] = contourm(yq,xq,log10(z3+1e-50),exp);
 % clegendm(c,t,-1);
 % geoshow(ax, land, 'FaceColor', [0.5 0.7 0.5]);
-
-
