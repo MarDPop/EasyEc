@@ -13,16 +13,18 @@ import java.util.Random;
  * @author mpopescu
  */
 public class FragmentOptions {
-    private Random rand = new Random();
+    private final Random rand = new Random();
+    
+    private double offsetTemp = 0;
     
     private double dragCoefficient;
     private double liftCoefficient;
-    private double lift2DragRatio;
-    private double ballisticCoefficient;
+    private double lift2DragRatio = 0;
+    private double ballisticCoefficient = 10;
     private double nominalMass;
     private double areaCrossSection;   
     
-    private double explosionSpeed;
+    private double explosionSpeed = 20;
     private double explosionDirectionFactor;
     
     private double characteristicLength;
@@ -30,7 +32,7 @@ public class FragmentOptions {
     private Material material;
     private double hollownessFactor;
     
-    private static final double[] sigma_l2d = new double[] {0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.8};
+    private static final double[] LIFT_DRAG = new double[] {0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.08};
 
     
     /**
@@ -41,11 +43,11 @@ public class FragmentOptions {
         this.ballisticCoefficient = Math.pow(10,rand.nextFloat()*3)+2;
         this.dragCoefficient = rand.nextFloat()*0.2+0.6;
         this.characteristicLength = 1;
-        this.lift2DragRatio = sigma_l2d[rand.nextInt(6)];
-        this.explosionSpeed = Math.pow(15,rand.nextFloat()*2);
+        this.lift2DragRatio = LIFT_DRAG[rand.nextInt(6)];
+        this.explosionSpeed = Math.pow(12,rand.nextFloat()*2);
         this.hollownessFactor = 0.25;
     }
-
+    
     /**
      * @return the dragCoefficient
      */
@@ -199,8 +201,19 @@ public class FragmentOptions {
     public void setHollownessFactor(double hollownessFactor) {
         this.hollownessFactor = hollownessFactor;
     }
-    
-    
-    
+
+    /**
+     * @return the offsetTemp
+     */
+    public double getOffsetTemp() {
+        return offsetTemp;
+    }
+
+    /**
+     * @param offsetTemp the offsetTemp to set
+     */
+    public void setOffsetTemp(double offsetTemp) {
+        this.offsetTemp = offsetTemp;
+    }
     
 }

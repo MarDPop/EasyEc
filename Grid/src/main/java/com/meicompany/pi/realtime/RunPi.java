@@ -49,7 +49,7 @@ public class RunPi {
     }
    
     private static NodeMap testMultiple(Trajectory traj) {
-        double time = 700;
+        double time = 0;
         double[][] state = traj.getStateCountup(0);
         PiCalc pi = new PiCalc(state[0],state[1],1);
         ArrayList<double[]> testTraj = new ArrayList<>();
@@ -57,19 +57,19 @@ public class RunPi {
             state = traj.getStateCountup(time);
             testTraj.add(CoordinateFrame.ecef2geo(state[0])); 
             if (traj.getCoordinateFrame() == 1) {
-                state[0] = CoordinateFrame.rotateZ(state[0], time*Earth.EARTH_ROT);                
+                state[0] = CoordinateFrame.rotateZ(state[0], (float)(time*Earth.EARTH_ROT));                
                 state[1][0] -= Earth.EARTH_ROT*state[0][1];
                 state[1][1] += Earth.EARTH_ROT*state[0][0];
             }
             pi.setState(state[0],state[1], time);
-            pi.run(12);
+            pi.run(7);
             pi.collectRun();
-            time += 2;
+            time += 10;
             Logger.getLogger(RunPi.class.getName()).log(Level.INFO, "time: {0} s", time);
         }
         Logger.getLogger(PiCalc.class.getName()).log(Level.INFO, "Printing Traj ");
-        Helper.printCsv2(testTraj,"traj.csv");
-        return pi.map(1e-17);
+        IOHelper.printCsv2(testTraj,"traj.csv");
+        return pi.map(1e-16f);
     }
     
     

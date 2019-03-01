@@ -20,10 +20,26 @@ public class ODEOptions {
     
     private double maxTimestep;
     private double minTimestep;
+    private double initialStep;
+    
+    public ODEOptions() {
+        this(new double[]{0,1e5,1e-3,1e-4,1e-3,10,1e-6,1e-3});
+    }
     
     public ODEOptions(double startTime, double endTime) {
         this.startTime = startTime;
         this.endTime = endTime;
+    }
+    
+    public ODEOptions(double[] in) {
+        this.startTime = in[0];
+        this.endTime = in[1];
+        this.absoluteTolerance = in[2];
+        this.relativeTolerance = in[3];
+        this.tolerance = in[4];
+        this.maxTimestep = in[5];
+        this.minTimestep = in[6];
+        this.initialStep = in[7];
     }
 
     /**
@@ -94,6 +110,20 @@ public class ODEOptions {
      */
     public void setMinTimestep(double minTimestep) {
         this.minTimestep = minTimestep;
+    }
+
+    /**
+     * @return the initialStep
+     */
+    public double getInitialStep() {
+        return initialStep;
+    }
+
+    /**
+     * @param initialStep the initialStep to set
+     */
+    public void setInitialStep(double initialStep) {
+        this.initialStep = initialStep;
     }
     
 }

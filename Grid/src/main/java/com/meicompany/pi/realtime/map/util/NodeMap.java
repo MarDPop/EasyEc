@@ -6,7 +6,7 @@
 package com.meicompany.pi.realtime.map.util;
 
 import com.meicompany.pi.coordinates.CoordinateFrame;
-import com.meicompany.pi.realtime.Helper;
+import com.meicompany.pi.realtime.generalMath.Math2;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -24,8 +24,8 @@ import org.json.JSONObject;
  */
 public class NodeMap {
     
-    final double xCenter;
-    final double yCenter;
+    final double longitudeCenter;
+    final double latitudeCenter;
     final int m;
     final int n;
     public final Node[][] nodes;
@@ -33,33 +33,39 @@ public class NodeMap {
     
     private short lowestLevel;
     
-    public NodeMap(double xCenter, double yCenter, int m, int n, double delta) {
-        this.xCenter = xCenter;
-        this.yCenter = yCenter;
+    public NodeMap(double longitudeCenter, double latitudeCenter, int m, int n, double delta) {
+        this.longitudeCenter = longitudeCenter;
+        this.latitudeCenter = latitudeCenter;
         this.m = m;
         this.n = n;
         this.nodes = new Node[2*m+1][2*n+1];
         this.delta = delta;
         for(int i = 0; i < (m+1); i++){
             for(int j = 0; j < (n+1); j++) {
-                nodes[m+i][n+j] = new Node(xCenter+i*delta,yCenter+j*delta,delta);
-                nodes[m+i][n-j] = new Node(xCenter+i*delta,yCenter-j*delta,delta);
+                nodes[m+i][n+j] = new Node(longitudeCenter+i*delta,latitudeCenter+j*delta,delta);
+                nodes[m+i][n-j] = new Node(longitudeCenter+i*delta,latitudeCenter-j*delta,delta);
             }
             for(int j = 0; j < (n+1); j++) {
-                nodes[m-i][n+j] = new Node(xCenter-i*delta,yCenter+j*delta,delta);
-                nodes[m-i][n-j] = new Node(xCenter-i*delta,yCenter-j*delta,delta);
+                nodes[m-i][n+j] = new Node(longitudeCenter-i*delta,latitudeCenter+j*delta,delta);
+                nodes[m-i][n-j] = new Node(longitudeCenter-i*delta,latitudeCenter-j*delta,delta);
             }
         }
     }
     
-    public Node getNodeAt(double x, double y) {
-        int i = (int) ((x-xCenter)/delta)+m;
-        int j = (int) ((y-yCenter)/delta)+n;
+    /**
+     * 
+     * @param longitude
+     * @param latitude
+     * @return 
+     */
+    public Node getNodeAt(double longitude, double latitude) {
+        int i = (int) ((longitude-longitudeCenter)/delta)+m;
+        int j = (int) ((latitude-latitudeCenter)/delta)+n;
         return nodes[i][j];
     }
     
-    public double getValue(double x, double y) {
-        return getNodeAt(x,y).getValue(x,y);
+    public double getValue(double longitude, double latitude) {
+        return getNodeAt(longitude,latitude).getValue(longitude,latitude);
     }
     
     public List<double[]> nodeGrid() {
@@ -75,17 +81,16 @@ public class NodeMap {
         try (FileWriter fw = new FileWriter("World.csv"); PrintWriter out = new PrintWriter(fw)) {
             List<double[]> points = nodeGrid();
             for (double[] point : points) {
-                double[] ll = CoordinateFrame.xy2ll(point);
-                out.print(ll[0]);
+                out.print(point[0]);
                 out.print(",");
-                out.print(ll[1]);
+                out.print(point[1]);
                 out.print(",");
                 out.print(point[2]);
                 out.println();
             }
             out.flush();
         } catch (IOException ex) {
-            Logger.getLogger(Helper.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Math2.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
@@ -101,7 +106,7 @@ public class NodeMap {
             lowestLevel = depth;
         }
         for(Node child : list) {
-            points.add(new double[]{child.x,child.y,child.getValue(),child.size});
+            points.add(new double[]{child.longitude,child.latitude,child.getValue(),child.size});
             if(child.getChildren() != null) {      
                 dive(points, child.getChildren(),depth);
             }

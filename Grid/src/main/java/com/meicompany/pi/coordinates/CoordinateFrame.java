@@ -1,7 +1,7 @@
 
 package com.meicompany.pi.coordinates;
 
-import com.meicompany.pi.realtime.Helper;
+import com.meicompany.pi.realtime.generalMath.Math2;
 import static java.lang.Math.asin;
 import static java.lang.Math.atan;
 import static java.lang.Math.atan2;
@@ -106,8 +106,9 @@ public abstract class CoordinateFrame {
      * @param latitude
      * @return 
      */
-    public static double lengthDegreeLat(double latitude) {
-        return 111132.92 - 559.82 * cos(2 * latitude) + 1.175 * cos(4 * latitude) - 0.0023 * cos(6 * latitude);
+    public static double lengthDegreeLat(float latitude) {
+        float lat = latitude+latitude;
+        return 111132.92 - 559.82 * Math2.cos(lat) + 1.175 * Math2.cos(lat+lat) - 0.0023 * Math2.cos(lat+lat+lat);
     }
 
     /**
@@ -130,15 +131,17 @@ public abstract class CoordinateFrame {
     public static double[] xy2ll(double[] xy) {
         double[] out = new double[2];
         double lat = xy[1] / 6371000;
+        double oldLat;
         for(int i = 0; i < 10; i++) {
-            double oldLat = lat;
-            lat = (xy[1] + 16037.66164350688 * sin(2 * oldLat) - 16.830635231967932 * sin(4 * oldLat) + 0.021963382146682 * sin(6 * oldLat))/6367447.280965017 ; 
-            if (Math.abs((oldLat-lat)/lat)< 1e-6){
+            oldLat = lat+lat;
+            lat = (xy[1] + 16037.66164350688 * sin(oldLat) - 16.830635231967932 * sin(oldLat+oldLat) + 0.021963382146682 * sin(oldLat+oldLat+oldLat))/6367447.280965017 ; 
+            if (Math.abs((oldLat-(lat+lat))/lat)< 1e-6){
                 break;
             }
         }
         out[1] = lat;
-        out[0] = xy[0] / (6383485.515566318 * cos(lat) - 5357.155384473197 * cos(3 * lat) + 6.760901982543714 * cos(5 * lat)); //longitude
+        oldLat = lat+lat;
+        out[0] = xy[0] / (6383485.515566318 * cos(lat) - 5357.155384473197 * cos(lat+oldLat) + 6.760901982543714 * cos(lat+oldLat+oldLat)); //longitude
         
         return out;
     }
@@ -151,27 +154,15 @@ public abstract class CoordinateFrame {
     public static double[] xy2llBeta(double[] xy) {
         double[] out = new double[2];
         double lat = xy[1] / 6371000;
-        double R = seaLevel(lat);
+        double R = Earth.seaLevel(lat);
         for(int i = 0; i < 10; i++) {
             out[1] = xy[1] / R; // latitude
-            R = seaLevel(out[1]);
+            R = Earth.seaLevel(out[1]);
         }
         out[0] = xy[0] / cos(out[1]) / R; //longitude
         return out;
     }
-    
-    /**
-     * Ecef to xy
-     * @param ecef
-     * @return
-     */
-    public static double[] ecef2xy(double[] ecef) {
-        double[] geo = CoordinateFrame.ecef2geo(ecef);
-        double[] out = new double[2];
-        out[0] = geo[0] * CoordinateFrame.lengthDegreeLong(geo[1]) * Helper.DEG2RAD;
-        out[1] = geo[1] * CoordinateFrame.lengthDegreeLat(geo[1]) * Helper.DEG2RAD;
-        return out;
-    }
+
     
     /**
      * Gets distance between two latitude and longitude coordinates (at sea level assuming spherical)
@@ -182,7 +173,7 @@ public abstract class CoordinateFrame {
      * @return 
      */
     public static double earthDistanceSpherical(double long1, double lat1, double long2, double lat2) {
-        return Earth.EARTH_AVG_D * asin(sqrt(Helper.haversin(lat2 - lat1) - cos(lat1) * cos(lat2) * Helper.haversin(long2 - long1)));
+        return Earth.EARTH_AVG_D * asin(sqrt(Math2.haversin(lat2 - lat1) - cos(lat1) * cos(lat2) * Math2.haversin(long2 - long1)));
     }
     
     /**
@@ -192,7 +183,7 @@ public abstract class CoordinateFrame {
      * @return 
      */
     public static double earthDistanceSpherical(double[] ecef1, double[] ecef2) {
-        return Earth.EARTH_AVG_D * asin(sqrt(1 - Helper.dot(ecef1, ecef2)) / Earth.EARTH_AVG_D * Earth.EARTH_AVG_R);
+        return Earth.EARTH_AVG_D * asin(sqrt(1 - Math2.dot(ecef1, ecef2)) / Earth.EARTH_AVG_D * Earth.EARTH_AVG_R);
     }
     
     /**
@@ -216,20 +207,22 @@ public abstract class CoordinateFrame {
     public static double[] ll2xy(double[] ll) {
         double[] out = new double[2];
         out[0] = (6383485.515566318 * cos(ll[1]) - 5357.155384473197 * cos(3 * ll[1]) + 6.760901982543714 * cos(5 * ll[1])) * ll[0]; //longitude
-        out[1] = 6367447.280965017 * ll[1] - 16037.66164350688 * sin(2 * ll[1]) + 16.830635231967932 * sin(4 * ll[1]) - 0.021963382146682 * sin(6 * ll[1]); //latitude integration
+        out[1] =  6367447.280965017 * ll[1] - 16037.66164350688 * sin(2 * ll[1]) + 16.830635231967932 * sin(4 * ll[1]) - 0.021963382146682 * sin(6 * ll[1]); //latitude integration
+        return out;
+    }
+    
+    /**
+     * Converts longitude and latitude to x and y coordinates 
+     * @param ll
+     * @return 
+     */
+    public static float[] ll2xy(float[] ll) {
+        float[] out = new float[2];
+        out[0] = (6383485.515566318f * Math2.cos(ll[1]) - 5357.155384473197f * Math2.cos(3 * ll[1]) + 6.760901982543714f * Math2.cos(5 * ll[1])) * ll[0]; //longitude
+        out[1] = 6367447.280965017f * ll[1] - 16037.66164350688f * Math2.sin(2 * ll[1]) + 16.830635231967932f * Math2.sin(4 * ll[1]) - 0.021963382146682f * Math2.sin(6 * ll[1]); //latitude integration
         return out;
     }
 
-    /**
-     * Gets sea level at latitude assuming ellipsoid earth
-     * @param latitude
-     * @return 
-     */
-    public static double seaLevel(double latitude) {
-        double a = cos(latitude) / 6378137;
-        double b = sin(latitude) / 6356752.3;
-        return 1 / sqrt(a * a + b * b);
-    }
 
     /**
      * Gets ecef coordinate from geodetic assuming ellipsoid earth
@@ -354,7 +347,68 @@ public abstract class CoordinateFrame {
         geo[1] += p; //Lat
         geo[2] = f + m * p / 2.0; //Altitude
         if (z < 0.0) {
-            geo[1] *= -1.0; //Lat
+            geo[1] = -geo[1]; //Lat
+        }
+        return geo; //Return Lon, Lat, Altitude in that order
+    }
+    
+    /**
+     * Gets geodetic coordinates from ecef
+     * @param x
+     * @param y
+     * @param z
+     * @return 
+     */
+    public static float[] ecef2geo(float x, float y, float z) {
+        float u;
+        float v;
+        float m;
+        float f;
+        float p;
+        float zp;
+        float w2;
+        float w;
+        float r2;
+        float r;
+        float s2;
+        float c2;
+        float s;
+        float c;
+        float[] geo = new float[3]; //Results go here (Lon, Lat, Altitude)
+        w2 = x*x + y*y;
+        w = (float)Math.sqrt(w2);
+        zp = z*z;
+        r2 = w2 + zp;
+        r = (float)(1/Math.sqrt(r2)); // encourage rsqrt
+        geo[0] = Math2.atan2(y, x); //Lon (final)
+        s2 = zp/r2;
+        c2 = w2/r2;
+        u = Earth.A2_F*r;
+        v = Earth.A3_F - Earth.A4_F*r;
+        zp = Math.abs(z);
+        if (c2 > 0.3) {
+            s = (zp*r)*(1 + c2*(Earth.A1_F + u + s2*v)*r);
+            geo[1] = Math2.asin(s); //Lat
+            c2 = s*s;
+            c = (float)Math.sqrt(1 - c2);
+        } else {
+            c = (w*r) * (1 - s2*(Earth.A5_F - u - c2*v)*r);
+            geo[1] = Math2.acos(c); //Lat
+            c2 = 1 - c*c;
+            s = (float)Math.sqrt(c2);
+        }
+        c2 = 1 - Earth.E2_F*c2;
+        s2 = (float)(Earth.EARTH_EQUATOR_R/Math.sqrt(c2));
+        u = w - s2*c;
+        s2 *= Earth.A6_F;
+        v = zp - s2*s;
+        f = c*u + s*v;
+        m = c*v - s*u;
+        p = m / (s2 / c2 + f);
+        geo[1] += p; //Lat
+        geo[2] = f + m * p *0.5f; //Altitude
+        if (z < 0.0) {
+            geo[1] = -geo[1]; //Lat
         }
         return geo; //Return Lon, Lat, Altitude in that order
     }
@@ -365,7 +419,7 @@ public abstract class CoordinateFrame {
      * @return 
      */
     public static double era(double UT1) {
-        return Helper.TWOPI * (0.779057273264 + 1.0027378119113546 * (UT1 - 2451545));
+        return Math2.TWOPI * (0.779057273264 + 1.0027378119113546 * (UT1 - 2451545));
     }
 
     /**
@@ -373,8 +427,8 @@ public abstract class CoordinateFrame {
      * @param latitude
      * @return 
      */
-    public static double lengthDegreeLong(double latitude) {
-        return 111412.84 * cos(latitude) - 93.5 * cos(3 * latitude) + 0.118 * cos(5 * latitude);
+    public static double lengthDegreeLong(float latitude) {
+        return 111412.84 * Math2.cos(latitude) - 93.5 * Math2.cos(3 * latitude) + 0.118 * Math2.cos(5 * latitude);
     }
     
     /**
@@ -392,11 +446,30 @@ public abstract class CoordinateFrame {
      * @param era
      * @return 
      */
-    public static double[] rotateZ(double[] r, double era) {
+    public static double[] rotateZ(double[] r, float era) {
         // just rotation 
         double[] out = new double[3];
-        out[0] = r[0]*cos(era) - r[1]*sin(era) ;
-        out[1] = r[0]*sin(era) + r[1]*cos(era) ;
+        float c = Math2.cos(era);
+        float s = Math2.sin(era); 
+        out[0] = r[0]*c - r[1]*s;
+        out[1] = r[0]*s + r[1]*c;
+        out[2] = r[2];
+        return out;
+    }
+    
+    /**
+     * 
+     * @param r
+     * @param era
+     * @return 
+     */
+    public static float[] rotateZ(float[] r, float era) {
+        // just rotation 
+        float[] out = new float[3];
+        float c = Math2.cos(era);
+        float s = Math2.sin(era); 
+        out[0] = r[0]*c - r[1]*s;
+        out[1] = r[0]*s + r[1]*c;
         out[2] = r[2];
         return out;
     }

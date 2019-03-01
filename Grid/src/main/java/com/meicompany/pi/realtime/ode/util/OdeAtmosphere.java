@@ -6,7 +6,8 @@
 package com.meicompany.pi.realtime.ode.util;
 
 import com.meicompany.pi.coordinates.CoordinateFrame;
-import com.meicompany.pi.realtime.Helper;
+import com.meicompany.pi.coordinates.Earth;
+import com.meicompany.pi.realtime.generalMath.Math2;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -81,6 +82,10 @@ public class OdeAtmosphere {
         
     }
     
+    /**
+     * Sets offset to nominal temperature
+     * @param tempOffset 
+     */
     public void setOffsetTemp(double tempOffset){
         this.tempOffset = tempOffset;
         for(int i = 0; i < alt.size(); i++) {
@@ -92,6 +97,10 @@ public class OdeAtmosphere {
         }
     }
     
+    /**
+     * Adds offset to wind strength
+     * @param addWind 
+     */
     public void changeWindStrength(double[] addWind){
         for(int i = 0; i < alt.size(); i++) {
             winds[i][0] += addWind[0];
@@ -105,9 +114,9 @@ public class OdeAtmosphere {
      * @return 
      */
     public static double geometricAlt(double[] r) {
-        double radius = Helper.norm(r);
+        double radius = Math2.norm(r);
         double lat = Math.asin(r[2]/radius);
-        double seaLevel = CoordinateFrame.seaLevel(lat);
+        double seaLevel = Earth.seaLevel(lat);
         return (radius-seaLevel)*seaLevel/radius;
     }
     

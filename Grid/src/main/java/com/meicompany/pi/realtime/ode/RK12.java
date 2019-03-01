@@ -5,7 +5,7 @@
  */
 package com.meicompany.pi.realtime.ode;
 
-import com.meicompany.pi.realtime.Helper;
+import com.meicompany.pi.realtime.generalMath.Math2;
 
 /**
  *
@@ -51,7 +51,7 @@ public class RK12 extends ODE {
                 e[i] = h*(k3[i]-k1[i]);
                 xb[i] = x[i] + xb[i]+e[i];
             }
-            double err = Helper.norm(e);
+            double err = Math2.norm(e);
             if (err > options.getTolerance()*dt) {
                 dt *= 0.7071*Math.sqrt(options.getTolerance()*dt/err);
             } else {

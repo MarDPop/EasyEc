@@ -5,7 +5,7 @@
  */
 package com.meicompany.pi.realtime.ode;
 
-import com.meicompany.pi.realtime.Helper;
+import com.meicompany.pi.realtime.generalMath.Math2;
 
 /**
  *
@@ -78,13 +78,14 @@ public class DP45 extends ODE {
             for(int i = 0; i < n; i++){
                 e[i] = xb[i] - xa[i];
             }
-            double err = Helper.norm(e);
+            double err = Math2.norm(e);
             if (err > options.getTolerance()) {
                 dt *= 0.84*Math.sqrt(Math.sqrt(options.getTolerance()*dt/err));
             } else {
                 System.arraycopy(xa, 0, x, 0, n);
                 System.arraycopy(k7, 0, k1, 0, n);
                 time +=dt;
+                dt *= 1.2;
                 break;
             }
         }

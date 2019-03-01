@@ -6,7 +6,7 @@
 package com.meicompany.pi.realtime.clustering;
 
 import com.meicompany.pi.coordinates.CoordinateFrame;
-import com.meicompany.pi.realtime.Helper;
+import com.meicompany.pi.realtime.generalMath.Math2;
 import java.util.Random;
 
 /**
@@ -108,8 +108,8 @@ public class KMeansSpherical {
                 rc[0] = centroids[i_found][0];
                 rc[1] = centroids[i_found][1];
                 rc[2] = centroids[i_found][2];
-                double[] dr = Helper.subtract(point, rc);
-                double[] n = Helper.cross(rc, dr);
+                double[] dr = Math2.subtract(point, rc);
+                double[] n = Math2.cross(rc, dr);
                 centroids[i_found][3] += point[0]; 
                 centroids[i_found][4] += point[1]; 
                 centroids[i_found][5] += point[2];
@@ -148,7 +148,7 @@ public class KMeansSpherical {
         double[] stats = new double[7];
         for (int i = 0; i < m; i++) {
             azimuth[i] = Math.atan2(data[i][1],data[i][0]);
-            double r = Helper.norm(data[i]);
+            double r = Math2.norm(data[i]);
             zenith[i] = Math.asin(data[i][2]/r);
             stats[0] += azimuth[i];
             stats[1] += zenith[i];

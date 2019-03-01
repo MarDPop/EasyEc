@@ -5,16 +5,25 @@
  */
 package com.meicompany.pi.realtime;
 
+import com.meicompany.pi.realtime.generalMath.Math2;
 import com.meicompany.pi.realtime.ode.util.OdeAtmosphere;
 import com.meicompany.pi.realtime.artifacts.BoundingBox;
 import com.meicompany.pi.coordinates.CoordinateFrame;
 import com.meicompany.pi.coordinates.Earth;
 import com.meicompany.pi.realtime.clustering.KMeans;
-import com.meicompany.pi.realtime.fragment.FragmentWithOde;
+import com.meicompany.pi.realtime.fragment.Fragment;
 import com.meicompany.pi.realtime.map.util.Node;
 import com.meicompany.pi.realtime.map.util.NodeMap;
-import static com.meicompany.pi.realtime.Helper.*;
+import static com.meicompany.pi.realtime.generalMath.Math2.*;
 import com.meicompany.pi.realtime.clustering.CentroidPi;
+import com.meicompany.pi.realtime.fragment.Fragment2ndOrder;
+import com.meicompany.pi.realtime.fragment.FragmentAdaptive;
+import com.meicompany.pi.realtime.fragment.FragmentAdaptiveHigher;
+import com.meicompany.pi.realtime.fragment.FragmentDefault;
+import com.meicompany.pi.realtime.fragment.FragmentLeapfrog;
+import com.meicompany.pi.realtime.fragment.FragmentOptions;
+import com.meicompany.pi.realtime.fragment.FragmentRK12;
+import com.meicompany.pi.realtime.ode.ODEOptions;
 import static java.lang.Math.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,17 +37,19 @@ import java.util.logging.Logger;
  */
 public class PiCalc {
     private final OdeAtmosphere atm;
-    private final ArrayList<FragmentWithOde> fragments;
-    private final double maxQ = 101000;
-    
+    private final ArrayList<Fragment> fragments;
+
     private final boolean testing = true;
-    private final boolean recordFragments = false;
+    private final double arcSecinRadians = 1.45444104333e-4; // 30 arcseconds in radians for pop scan
     
     // Parameters
     final int numberFragments;
     final int numberTurns;
-    
-    private int numberCentroids;
+    final double maxQ = 101000;
+    final double fragsPerEvent = 50;
+    final short maxLevels = 6;
+    final float levelTolMultiplier = 7.5f;
+    float maxTol;
     
     // Initial
     private final double[] x0 = new double[3];
@@ -52,29 +63,32 @@ public class PiCalc {
     private float sigma_pitch;
     private float sigma_temperature;
     
-    private double[][] centroidStatXtra;
-    
     //Impacts
-    private final double[][] impacts;
-    private final double[][] impacts2D;
-    private double[][] centroids;
-    private HashMap<Double,CentroidPi[]> runs = new HashMap<>();
+    private final float[][] impacts2D;
+    private float[][] centroids;
+    private final HashMap<Double,CentroidPi[]> runs = new HashMap<>();
     private double weight;
-    private ArrayList<double[][]> testImpacts = new ArrayList<>();
-    private ArrayList<ArrayList<double[]>> testFragments = new ArrayList<>();
+    private final ArrayList<float[][]> testImpacts = new ArrayList<>();
+    private final ArrayList<double[]> testImpactsSpherical = new ArrayList<>();
     
     
     public PiCalc(double[] x0, double[] v0, double time) {
         this.atm = new OdeAtmosphere("src/main/resources/altitudes2.csv",0,1);
         setState(x0,v0, time);
-        this.numberFragments = 200;
+        this.numberFragments = 120;
         this.fragments = new ArrayList<>(numberFragments);
+        FragmentOptions fOptions = new FragmentOptions();
+        ODEOptions oOptions = new ODEOptions();
+        oOptions.setMaxTimestep(8);
+        oOptions.setTolerance(5e-9);
+        oOptions.setInitialStep(sqrt(0.63*exp(-(norm(x0)-6371000)*1.577086431315691e-04)*(v0[0]*v0[0]+v0[1]*v0[1]+v0[2]*v0[2])/1e5));
         for(int i = 0; i < numberFragments; i++) {
-            fragments.add(new FragmentWithOde(atm));
+            fOptions.generatePseudo();
+            fragments.add(new FragmentRK12(fOptions,atm,oOptions));
         }
         this.numberTurns = 5;
-        this.impacts = new double[numberFragments*numberTurns][4]; // The indexes are : x y z time
-        this.impacts2D = new double[numberFragments*numberTurns][2];
+        // this.impacts = new double[numberFragments*numberTurns][4]; // The indexes are : x y z time
+        this.impacts2D = new float[numberFragments*numberTurns][2];
     }
     
     public final void setState(double[] x0, double[] v0, double time) {
@@ -106,8 +120,8 @@ public class PiCalc {
         float speedVertical = (float)dot(v0,radialVector);
         float speedNorth = (float)dot(v0,northVector);
         float speedEast = (float)(v0[0]*eastVector[0]+v0[1]*eastVector[1]); 
-        float pitch = Helper.asin(speedVertical/speed0);
-        float heading = Helper.atan2(speedNorth,speedEast);
+        float pitch = Math2.asin(speedVertical/speed0);
+        float heading = Math2.atan2(speedNorth,speedEast);
         // Repeated Parameters
         double[] g0 = multiply(radialVector,-9.8);
         double dynamicPressureApprox = 0.63*exp(-(radius-6371000)/8500)*speed0*speed0;
@@ -124,10 +138,10 @@ public class PiCalc {
             float speed = speed0 + speedFactor*sigma_speed*(float)rand.nextGaussian();
             
             // Velocity Temp Calc
-            x[2] = speed*Helper.sin(pitchAngle);
-            pitchAngle = Helper.cos(pitchAngle);
-            x[0] = speed*pitchAngle*Helper.cos(headingAngle);
-            x[1] = speed*pitchAngle*Helper.sin(headingAngle);
+            x[2] = speed*Math2.sin(pitchAngle);
+            pitchAngle = Math2.cos(pitchAngle);
+            x[0] = speed*pitchAngle*Math2.cos(headingAngle);
+            x[1] = speed*pitchAngle*Math2.sin(headingAngle);
             // Multiply by direction (convert to ECI coordinates)
             v[0] = x[0]*eastVector[0]+x[1]*northVector[0]+x[2]*radialVector[0];
             v[1] = x[0]*eastVector[1]+x[1]*northVector[1]+x[2]*radialVector[1];
@@ -143,63 +157,79 @@ public class PiCalc {
             double dTemp = sigma_temperature*rand.nextGaussian();
             this.atm.setOffsetTemp(dTemp);
             
-            if(!recordFragments) {
-                fragments.parallelStream().forEach(frag -> frag.run(x,v,g0,time));
-
-                for(FragmentWithOde frag : fragments) {
-                    System.arraycopy(frag.impact(), 0, impacts[count], 0, 4);
-                    count++;
-                }
-            } else {
-                fragments.parallelStream().forEach(frag -> frag.runRecord(x,v,g0,time));
-
-                for(FragmentWithOde frag : fragments) {
-                    System.arraycopy(frag.impact(), 0, impacts[count], 0, 4);
-                    testFragments.add(frag.recording);
-                    count++;
+            // Integrate 
+            fragments.parallelStream().forEach(frag -> {
+                frag.setup(x,v,g0,time);
+                frag.run();
+            });
+            
+            // Record Impacts
+            for(Fragment frag : fragments) {
+                System.arraycopy(frag.impact2xy(), 0, impacts2D[count], 0, 2);
+                count++;
+                if(testing) {
+                    double[] nj = new double[4];
+                    System.arraycopy(frag.impact(),0,nj,0,4);
+                    if( nj[0] == Double.NaN || nj[1] == Double.NaN ) {
+                        System.out.println(frag.hashCode());
+                    }
+                    if (nj[3] > 4000) {
+                        System.out.println(time+" to "+nj[3]+" bc: "+frag.bcFast(0));
+                    }
+                    testImpactsSpherical.add(CoordinateFrame.rotateZ(nj, (float)(-nj[3]*Earth.EARTH_ROT)));
                 }
             }
         }
-
-        for(int i = 0; i < impacts.length; i++) {
-            impacts2D[i] =  Helper.impact2xy(impacts[i]); 
+        
+        if(testing) {         
+            testImpacts.add(Math2.copy(impacts2D));
         }
         
-        if(testing) {
-            for (double[] impact : impacts) {
-                double[] geo = CoordinateFrame.ecef2geo(impact);
-                geo[0] -= impact[3]*Earth.EARTH_ROT;
-                System.arraycopy(geo, 0, impact, 0, 3);
-            }            
-            testImpacts.add(Helper.copy(impacts));
-        }
-        
-        this.centroids = KMeans.cluster(impacts2D,nCentroids);
-        this.numberCentroids = centroids.length;
-        
-        // Precompute 2d distribution details
-        centroidStatXtra = new double[numberCentroids][3];
-        for(int i = 0; i < numberCentroids; i++) {
-            centroidStatXtra[i][0] = Math.sqrt(centroids[i][6]*centroids[i][7]);
-            centroidStatXtra[i][1] = centroids[i][8]/centroidStatXtra[i][0];
-            centroidStatXtra[i][2] = Math.sqrt(1-centroidStatXtra[i][1]*centroidStatXtra[i][1]);
-        }
+        this.centroids = KMeans.cluster(impacts2D,nCentroids);    
     }
     
     public void collectRun() {
+        int numberCentroids = centroids.length;
         CentroidPi[] c = new CentroidPi[numberCentroids];
         for(int i = 0; i < numberCentroids; i++) {
-            c[i] = new CentroidPi(centroids[i],centroidStatXtra[i]);
+            c[i] = new CentroidPi(centroids[i],time);
         }
         runs.put(time, c);
     }
     
-    public NodeMap map(double tol) {
-
+    public NodeMap map(float tol) {
+        this.maxTol = (float) (1.01*Math.pow(levelTolMultiplier, maxLevels));
+        
         double[] stats = getCentroidStats();
-        double d = 2.5*Math.sqrt(stats[2] + stats[3]);
-        int delta = 20;
-        NodeMap map = new NodeMap(stats[0],stats[1],delta,delta,d/delta);
+        
+        BoundingBox box = new BoundingBox(stats);
+        
+        if(testing) {
+            Logger.getLogger(PiCalc.class.getName()).log(Level.INFO, "Printing data ");
+            // IOHelper.printCsv(box.pointsXY,"traj.csv");
+            IOHelper.printCsv(runs.values(), "centroids.csv");
+            
+            IOHelper.printCsv2(testImpactsSpherical,"impacts.csv");
+            
+            IOHelper.printCsv3(testImpacts,"data.csv");
+        }
+        
+        double[] center = CoordinateFrame.xy2ll(stats);
+        double approxLong = Math.sqrt(stats[2])/6371000;
+        double approxLat = Math.sqrt(stats[3])/6371000;
+        if(approxLong > Math.PI*0.33) {
+            approxLong = Math.PI*0.33;
+        }
+        
+        if(approxLat > Math.PI*0.166666) {
+            approxLat = Math.PI*0.166666;
+        }
+        double sdNumber = 2;
+        double initialCellSize = arcSecinRadians*32;
+        int m = (int) (sdNumber*approxLong/initialCellSize); // divisions in even number of 30 arc seconds
+        int n = (int) (sdNumber*approxLat/initialCellSize);
+        
+        NodeMap map = new NodeMap(center[0],center[1],m,n,initialCellSize); // need to output a spherical too
         int i = 0;
         for(Node[] row : map.nodes){
             for(Node col : row) {
@@ -207,17 +237,8 @@ public class PiCalc {
             }
             Logger.getLogger(PiCalc.class.getName()).log(Level.INFO, "processed row " + (i++));
         }
-        BoundingBox box = new BoundingBox(stats);
-        if(testing) {
-            // Helper.printCsv(box.pointsXY,"traj.csv");
-            Helper.printCsv(runs.values(), "centroids.csv");
-            Logger.getLogger(PiCalc.class.getName()).log(Level.INFO, "Printing data ");
-            Helper.printCsv(testImpacts,"data.csv");
-            if (recordFragments) {
-                Logger.getLogger(PiCalc.class.getName()).log(Level.INFO, "Printing Frag ");
-                Helper.printFrags(testFragments);
-            }
-        }
+        
+        
         Logger.getLogger(PiCalc.class.getName()).log(Level.INFO, "Get map ");
         return map;
     }
@@ -251,24 +272,27 @@ public class PiCalc {
         return stats;
     }
     
-    private void testNode(Node n, double tol) {
-        double prob = 0;
+    private void testNode(Node n, float tol) {
+        float prob = 0;
         for(CentroidPi[] list : runs.values()){
-            for(CentroidPi c : list) {
-                prob += c.calcAt(n.x, n.y);
+            for(CentroidPi centroid : list) {
+                prob += centroid.calcAtLongLat((float)n.longitude, (float)n.latitude);
             }
         }
-        if (prob < 1e-50) {
-            prob = 0;
+        
+        if (prob < 1e-25f) {
+            prob = 1e-25f;
         } else {
             prob /= weight;
         }
+        
         n.setValue(prob);
-        if (tol < 2e-6) {
+        
+        if (tol < maxTol) {
             if (prob > tol) {
                 n.divide();
                 for(Node c : n.getChildren()) {
-                    testNode(c,tol*10);
+                    testNode(c,tol*levelTolMultiplier);
                 }
             }
         }

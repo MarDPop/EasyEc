@@ -1,7 +1,7 @@
 package com.meicompany.pi.realtime.clustering;
 
 import com.meicompany.pi.coordinates.CoordinateFrame;
-import com.meicompany.pi.realtime.Helper;
+import com.meicompany.pi.realtime.generalMath.Math2;
 
 /**
  *
@@ -21,10 +21,10 @@ public class SphericalDistribution1D extends Centroid{
         this.locationTemp[0] /= n;
         this.locationTemp[1] /= n;
         this.locationTemp[2] /= n;
-        double[] err = Helper.subtract(location, locationTemp);
+        double[] err = Math2.subtract(location, locationTemp);
         this.location = locationTemp;
         reset();
-        return Helper.norm(err);
+        return Math2.norm(err);
     }
     
     public double distance(double[] r) {

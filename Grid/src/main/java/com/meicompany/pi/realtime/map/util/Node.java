@@ -5,14 +5,16 @@
  */
 package com.meicompany.pi.realtime.map.util;
 
+import com.meicompany.pi.coordinates.CoordinateFrame;
+
 /**
  *
  * @author mpopescu
  */
 public class Node {
     //of center
-    public final double x;
-    public final double y;
+    public final double longitude;
+    public final double latitude;
     public final double size;
     
     protected double value;
@@ -25,9 +27,9 @@ public class Node {
     public static final double LOWER_LEFT = -1;
     public static final double LOWER_RIGHT = -2;
     
-    public Node(double x, double y, double size) {
-        this.x = x;
-        this.y = y;
+    public Node(double longitude, double latitude, double size) {
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.size = size;
     }
     
@@ -38,14 +40,14 @@ public class Node {
         this.size = parent.size/2;
         this.value = parent.getValue();
         if (corner % 2 == 0) {
-            this.x = parent.x + this.size;
+            this.longitude = parent.longitude + this.size;
         } else {
-            this.x = parent.x  - this.size;
+            this.longitude = parent.longitude  - this.size;
         }
         if (corner > 0) {
-            this.y = parent.y + this.size;
+            this.latitude = parent.latitude + this.size;
         } else {
-            this.y = parent.y - this.size;
+            this.latitude = parent.latitude - this.size;
         }
     }
     /**
@@ -61,10 +63,8 @@ public class Node {
         this.getChildren()[3] = new Node(this,-2);
     }
     
-    public double distance(double x, double y) {
-        double dx = x-this.x;
-        double dy = y-this.y;
-        return dx*dx+dy*dy;
+    public double distance(double longitude, double latitude) {
+        return CoordinateFrame.vincentyFormulae(longitude, latitude, this.longitude, this.latitude);
     }
     
     public void setValue(double value) {
@@ -81,19 +81,19 @@ public class Node {
         return value;
     }
     
-    public double getValue(double x, double y){
+    public double getValue(double longitude, double latitude){
         if(getChildren() == null){
             if(getParent() == null) {
                 return value;
             } else {
-                double sumDen = getParent().distance(x,y);
+                double sumDen = getParent().distance(longitude,latitude);
                 if (sumDen < 1e-20) {
                     return getParent().getValue();
                 }
                 sumDen = 1/sumDen;
                 double sumNum = sumDen*getParent().getValue();
                 for(int i = 0; i < 4; i++) {
-                    double d = getParent().getChildren()[i].distance(x,y);
+                    double d = getParent().getChildren()[i].distance(longitude,latitude);
                     if(d < 1) {
                         return getParent().getChildren()[i].getValue();
                     } else {
@@ -106,17 +106,17 @@ public class Node {
             }
         } else {
             // 0 = upper right, 1 = upper left, 2 = lower left, 3 = lower right
-            if(x < this.x) {
-                if(y < this.y) {
-                    return getChildren()[2].getValue(x, y);
+            if(longitude < this.longitude) {
+                if(latitude < this.latitude) {
+                    return getChildren()[2].getValue(longitude, latitude);
                 } else {
-                    return getChildren()[1].getValue(x, y);
+                    return getChildren()[1].getValue(longitude, latitude);
                 }
             } else {
-                if(y < this.y) {
-                    return getChildren()[3].getValue(x, y);
+                if(latitude < this.latitude) {
+                    return getChildren()[3].getValue(longitude, latitude);
                 } else {
-                    return getChildren()[0].getValue(x, y);
+                    return getChildren()[0].getValue(longitude, latitude);
                 }
             }
         }
